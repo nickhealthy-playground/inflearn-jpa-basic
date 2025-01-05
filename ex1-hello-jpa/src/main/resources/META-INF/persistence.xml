@@ -2,13 +2,17 @@
 <persistence version="2.2" xmlns="http://xmlns.jcp.org/xml/ns/persistence"
              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
              xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/persistence http://xmlns.jcp.org/xml/ns/persistence/persistence_2_2.xsd">
-    <persistence-unit name="hello">
+    <persistence-unit name="hello"> <!-- 이름 지정 -->
         <properties>
             <!-- 필수 속성 -->
+            <!-- jakarta.persistence: 표준 속성을 의미함, 즉 다른 DB 변경 시에도 호환 가능 -->
             <property name="jakarta.persistence.jdbc.driver" value="org.h2.Driver"/>
             <property name="jakarta.persistence.jdbc.user" value="sa"/>
             <property name="jakarta.persistence.jdbc.password" value=""/>
             <property name="jakarta.persistence.jdbc.url" value="jdbc:h2:tcp://localhost/~/test"/>
+            <!-- hibernate.dialect: 방언이라고도 부르며, 특정 데이터베이스만의(H2Dialect) 고유 기능을 사용하기 위해 설정
+                - 데이터베이스 마다 지원되는 함수나 데이터 타입 등이 다르므로 범용적으로 지원하기 위해 Hibernate에서 지원
+             -->
             <property name="hibernate.dialect" value="org.hibernate.dialect.H2Dialect"/>
 
             <!-- 옵션 -->
