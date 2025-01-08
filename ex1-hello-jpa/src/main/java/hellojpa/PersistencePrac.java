@@ -24,9 +24,11 @@ public class PersistencePrac {
             // 영속 상태
             System.out.println("=== BEFORE ===");
             em.persist(member);
+//            em.detach(member);      // 엔티티를 영속성 컨트스트에서 분리, 준영속 상태
             System.out.println("=== AFTER ===");
 
-            tx.commit();
+//            em.remove(member);    // 삭제
+            tx.commit();    // 커밋 이후 실제 데이터베이스에 저장
 
         } catch (Exception e) {
             tx.rollback();
