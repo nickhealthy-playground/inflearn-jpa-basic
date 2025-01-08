@@ -16,18 +16,23 @@ public class PersistencePrac {
         tx.begin(); // 트랜잭션 시작
 
         try {
-            // JPA와 아무 관계 없는 비영속 상태
-            Member member = new Member();
-            member.setId(100L);
-            member.setName("HELLO");
+            // 비영속
+//            Member member = new Member();
+//            member.setId(101L);
+//            member.setName("HELLO");
 
-            // 영속 상태
+            // 영속
             System.out.println("=== BEFORE ===");
-            em.persist(member);
-//            em.detach(member);      // 엔티티를 영속성 컨트스트에서 분리, 준영속 상태
+//            em.persist(member);
             System.out.println("=== AFTER ===");
 
-//            em.remove(member);    // 삭제
+            // SELECT 쿼리가 날라가지 않음
+            Member findMember1 = em.find(Member.class, 101L);
+            Member findMember2 = em.find(Member.class, 101L);
+
+            System.out.println("findMember.getId() = " + findMember1.getId());
+            System.out.println("findMember.getName() = " + findMember1.getName());
+
             tx.commit();    // 커밋 이후 실제 데이터베이스에 저장
 
         } catch (Exception e) {
