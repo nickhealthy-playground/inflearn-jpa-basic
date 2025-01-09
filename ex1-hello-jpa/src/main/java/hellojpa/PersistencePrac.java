@@ -36,8 +36,9 @@ public class PersistencePrac {
             */
 
             /**
-             * 영속성 컨텍스트 2
+             * 영속성 컨텍스트 2 - 쓰기 지연
              */
+            /*
             // 영속
             Member member1 = new Member(150L, "A");
             Member member2 = new Member(160L, "A");
@@ -48,6 +49,15 @@ public class PersistencePrac {
             System.out.println("=======================");  // INSERT 쿼리가 실행되지 않음
 
             tx.commit();    // 커밋 이후 실제 데이터베이스에 저장
+             */
+
+            /**
+             * 영속성 컨텍스트 2 - 변경 감지
+             */
+            Member member = em.find(Member.class, 150L);
+            member.setName("ZZZZZ");
+
+            tx.commit();
 
         } catch (Exception e) {
             tx.rollback();
