@@ -16,14 +16,15 @@ public class PersistencePrac {
         tx.begin(); // 트랜잭션 시작
 
         try {
+            /*
             // 비영속
-//            Member member = new Member();
-//            member.setId(101L);
-//            member.setName("HELLO");
+            Member member = new Member();
+            member.setId(101L);
+            member.setName("HELLO");
 
             // 영속
             System.out.println("=== BEFORE ===");
-//            em.persist(member);
+            em.persist(member);
             System.out.println("=== AFTER ===");
 
             // SELECT 쿼리가 날라가지 않음
@@ -32,6 +33,19 @@ public class PersistencePrac {
 
             System.out.println("findMember.getId() = " + findMember1.getId());
             System.out.println("findMember.getName() = " + findMember1.getName());
+            */
+
+            /**
+             * 영속성 컨텍스트 2
+             */
+            // 영속
+            Member member1 = new Member(150L, "A");
+            Member member2 = new Member(160L, "A");
+
+            em.persist(member1);
+            em.persist(member2);
+
+            System.out.println("=======================");  // INSERT 쿼리가 실행되지 않음
 
             tx.commit();    // 커밋 이후 실제 데이터베이스에 저장
 
