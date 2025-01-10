@@ -54,8 +54,18 @@ public class PersistencePrac {
             /**
              * 영속성 컨텍스트 2 - 변경 감지
              */
-            Member member = em.find(Member.class, 150L);
-            member.setName("ZZZZZ");
+
+            // 비영속
+            Member member = new Member();
+            member.setId(100L);
+            member.setName("JPA");
+
+            // 영속
+//            em.persist(member);
+
+            Member findMember = em.find(Member.class, member.getId());
+            findMember.setName("JPA2");
+
 
             tx.commit();
 
