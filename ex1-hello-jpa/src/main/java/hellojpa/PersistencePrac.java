@@ -63,9 +63,16 @@ public class PersistencePrac {
             // 영속
 //            em.persist(member);
 
+            /**
+             * 준영속 상태(Detached State)
+             */
             Member findMember = em.find(Member.class, member.getId());
-            findMember.setName("JPA2");
+            findMember.setName("JPA1");
 
+            System.out.println("===============");
+
+            // 주의!! 엔티티는 member가 아니라 findMember 임
+            em.detach(findMember);
 
             tx.commit();
 
