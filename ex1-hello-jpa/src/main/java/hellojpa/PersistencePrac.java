@@ -66,13 +66,20 @@ public class PersistencePrac {
             /**
              * 준영속 상태(Detached State)
              */
-            Member findMember = em.find(Member.class, member.getId());
-            findMember.setName("JPA1");
+            Member findMember1 = em.find(Member.class, member.getId());
+            findMember1.setName("JPA1");
 
             System.out.println("===============");
 
             // 주의!! 엔티티는 member가 아니라 findMember 임
-            em.detach(findMember);
+//            em.detach(findMember);
+
+            // 영속성 컨텍스트에서 관리하는 모든 엔티티를 초기화
+            em.clear();
+
+            // 초기화 작업으로 인해 다시 동일한 엔티티를 조회했을 때, 1차 캐시 조회가 아닌 SELECT 쿼리로 조회하는 것을 확인할 수 있다.
+            Member findMember2 = em.find(Member.class, member.getId());
+
 
             tx.commit();
 
