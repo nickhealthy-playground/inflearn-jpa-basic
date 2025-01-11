@@ -80,7 +80,6 @@ public class PersistencePrac {
             // 초기화 작업으로 인해 다시 동일한 엔티티를 조회했을 때, 1차 캐시 조회가 아닌 SELECT 쿼리로 조회하는 것을 확인할 수 있다.
             Member findMember2 = em.find(Member.class, member.getId());
 
-
             tx.commit();
 
         } catch (Exception e) {
