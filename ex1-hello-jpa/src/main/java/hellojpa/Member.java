@@ -1,5 +1,6 @@
 package hellojpa;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 
@@ -9,6 +10,9 @@ public class Member {
 
     @Id // 데이터베이스 PK와 매핑
     private Long id;
+
+    // DDL 생성 기능
+    @Column(unique=true, length = 10)
     private String name;
 
     public Member() {
