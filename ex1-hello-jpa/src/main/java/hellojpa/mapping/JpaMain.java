@@ -5,6 +5,8 @@ import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.EntityTransaction;
 import jakarta.persistence.Persistence;
 
+import java.util.List;
+
 public class JpaMain {
 
     public static void main(String[] args) {
@@ -39,6 +41,11 @@ public class JpaMain {
 //            Team findTeam = em.find(Team.class, findTeamId);
             Team findTeam = findMember.getTeam(); // 객체 지향적으로 모델링 수정
             System.out.println("findTeam = " + findTeam.getName()); // findTeam = TeamA
+
+            List<Member> members = findMember.getTeam().getMembers();
+            for (Member m : members) {
+                System.out.println("m.getUsername() = " + m.getUsername());
+            }
 
             tx.commit();
         } catch (Exception e) {
