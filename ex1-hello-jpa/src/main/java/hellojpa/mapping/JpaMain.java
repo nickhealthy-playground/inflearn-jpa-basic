@@ -7,6 +7,9 @@ import jakarta.persistence.Persistence;
 
 import java.util.List;
 
+/**
+ * 6. 양방향 연관관계와 연관관계의 주인 1 - 기본
+ */
 public class JpaMain {
 
     public static void main(String[] args) {
