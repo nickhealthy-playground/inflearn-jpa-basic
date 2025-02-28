@@ -14,16 +14,19 @@ public class Member {
     @Column(name = "USERNAME")
     private String username;
 
-//    /**
-//     * 객체를 테이블에 맞춰 모델링
-//     * - 참조 대신에 외래 키를 그대로 사용 - 객체지향적이지 못함
-//     */
+    /**
+     * 객체를 테이블에 맞춰 모델링
+     * - 참조 대신에 외래 키를 그대로 사용 - 객체지향적이지 못함
+     */
 //    @Column(name = "TEAM_ID")
 //    private Long teamId;
 
-    @ManyToOne // Member와 Team은 N:1 관계
-    @JoinColumn(name = "TEAM_ID") // Team 엔티티의 TEAM_ID 컬럼과 외래키 관계
-    private Team team;
+    /**
+     * 양방향 매핑 방식
+     */
+//    @ManyToOne // Member와 Team은 N:1 관계
+//    @JoinColumn(name = "TEAM_ID") // Team 엔티티의 TEAM_ID 컬럼과 외래키 관계
+//    private Team team;
 
     public Long getId() {
         return id;
@@ -41,12 +44,12 @@ public class Member {
         this.username = username;
     }
 
-    public Team getTeam() {
+    /*public Team getTeam() {
         return team;
     }
 
     public void changeTeam(Team team) {
         this.team = team;
         team.getMembers().add(this); // 가짜매핑에도 값을 세팅
-    }
+    }*/
 }
