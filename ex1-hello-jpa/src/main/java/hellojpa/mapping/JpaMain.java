@@ -33,7 +33,7 @@ public class JpaMain {
              * - 객체를 참조하는 방식으로 모델링 필요(객체 지향적인 모델링)
              */
 //            member.setTeamId(team.getId());
-            member.setTeam(team); // 객체 지향적으로 모델링 수정 - 영속성 컨텍스트에 의해 JPA가 자동으로 Team 객체에서 PK 값을 꺼내 세팅한다.
+            member.changeTeam(team); // 객체 지향적으로 모델링 수정 - 영속성 컨텍스트에 의해 JPA가 자동으로 Team 객체에서 PK 값을 꺼내 세팅한다.
             em.persist(member);
 
             em.flush();
