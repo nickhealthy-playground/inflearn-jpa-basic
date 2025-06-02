@@ -2,8 +2,6 @@ package hellojpa;
 
 import jakarta.persistence.*;
 
-import java.util.List;
-
 public class JpaMain {
 
     public static void main(String[] args) {
@@ -15,7 +13,7 @@ public class JpaMain {
 //        try {
 //            Member member = new Member();
 //            member.setId(2L);
-//            member.setName("helloB");
+//            member.setUserName("helloB");
 //
 //            em.persist(member);
 //            tx.commit();
@@ -39,7 +37,7 @@ public class JpaMain {
 //                    .getResultList();
 //
 //            for (Member member : result) {
-//                System.out.println("member.getName() = " + member.getName());
+//                System.out.println("member.getUserName() = " + member.getUserName());
 //            }
 //            tx.commit();
 //        } catch (Exception e) {
@@ -56,7 +54,7 @@ public class JpaMain {
 //            // 비영속
 //            Member member = new Member();
 //            member.setId(100L);
-//            member.setName("HelloJPA");
+//            member.setUserName("HelloJPA");
 //
 //            System.out.println("=== BEFORE ===");
 //            em.persist(member); // 영속
@@ -102,10 +100,10 @@ public class JpaMain {
 //        try {
 //            Member member = em.find(Member.class, 150L);
 //            System.out.println("member.getId() = " + member.getId());
-//            System.out.println("member.getName() = " + member.getName()); // B
+//            System.out.println("member.getUserName() = " + member.getUserName()); // B
 //            // em.persist() 메서드를 호출하지 않아도 commit 시점에 값이 DB에 반영
 //            // JPA는 컬렉션을 다루듯이(em.find) 매커니즘이 설계 되었기 때문에, 따로 반영하는 코드를 작성하지 않아도 변경사항이 있으면 이전 스냅샷과 비교해 변경분을 곧바로 반영함
-//            member.setName("ZZZZ");
+//            member.setUserName("ZZZZ");
 //
 //            tx.commit();
 //        } catch (Exception e) {
@@ -153,7 +151,7 @@ public class JpaMain {
 //            em.persist(member);
 
             Member member = em.find(Member.class, 100L);
-            member.setName("memberB"); // 엔티티 변경 시 영속성 컨텍스트의 쓰기 지연에 의해 커밋 시점에 변경분이 반영되어야 함
+            member.setUserName("memberB"); // 엔티티 변경 시 영속성 컨텍스트의 쓰기 지연에 의해 커밋 시점에 변경분이 반영되어야 함
 
             em.detach(member); // 영속성 컨텍스트에서 분리(해당 엔티티 관리 대상에서 제외됨)
 
