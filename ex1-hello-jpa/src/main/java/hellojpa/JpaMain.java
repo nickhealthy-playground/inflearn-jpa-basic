@@ -115,24 +115,51 @@ public class JpaMain {
 //            emf.close();
 //        }
 
+//        /**
+//        * 영속성 컨텍스트4 - em.flush()
+//         * - 해당 메서드를 호출해도 영속성 컨텍스트를 비우지 않음
+//         * - 영속성 컨텍스트의 변경 내용을 데이터베이스에 동기화
+//        */
+//        try {
+//            Member member1 = new Member(200L, "A");
+//            Member member2 = new Member(300L, "B");
+//            Member member3 = new Member(400L, "C");
+//
+//            em.persist(member1);
+//            em.persist(member2);
+//            em.persist(member3);
+//
+//            TypedQuery<Member> query = em.createQuery("select m from Member as m", Member.class);
+//            List<Member> resultList = query.getResultList(); // JPQL 쿼리 실행 시 자동으로 flush 실행
+//            System.out.println("========="); // 따라서 커밋 이전이지만 flush를 통해 데이터베이스에 저장된 값이 있으므로 쿼리 조회 시 조회가 가능함
+//            System.out.println("resultList = " + resultList);
+//
+//            tx.commit(); // commit 실행 시 자동으로 flush 실행
+//        } catch (Exception e) {
+//            tx.rollback();
+//        } finally {
+//            em.close();
+//            emf.close();
+//        }
+
         /**
-        * 영속성 컨텍스트4 - em.flush()
-         * - 해당 메서드를 호출해도 영속성 컨텍스트를 비우지 않음
-         * - 영속성 컨텍스트의 변경 내용을 데이터베이스에 동기화
-        */
+         * 영속성 컨텍스트5 - 준영속
+         * - 영속 -> 준영속: 영속 상태의 엔티티가 영속성 컨텍스트에서 분리(detached)
+         * - 영속성 컨텍스트가 제공하는 기능을 사용 못함, 관리 대상 X
+         */
         try {
-            Member member1 = new Member(200L, "A");
-            Member member2 = new Member(300L, "B");
-            Member member3 = new Member(400L, "C");
+            // 100L ID를 가진 멤버를 저장
+//            Member member = new Member(100L, "memberA");
+//            em.persist(member);
 
-            em.persist(member1);
-            em.persist(member2);
-            em.persist(member3);
+            Member member = em.find(Member.class, 100L);
+            member.setName("memberB"); // 엔티티 변경 시 영속성 컨텍스트의 쓰기 지연에 의해 커밋 시점에 변경분이 반영되어야 함
 
-            TypedQuery<Member> query = em.createQuery("select m from Member as m", Member.class);
-            List<Member> resultList = query.getResultList(); // JPQL 쿼리 실행 시 자동으로 flush 실행
-            System.out.println("========="); // 따라서 커밋 이전이지만 flush를 통해 데이터베이스에 저장된 값이 있으므로 쿼리 조회 시 조회가 가능함
-            System.out.println("resultList = " + resultList);
+            em.detach(member); // 영속성 컨텍스트에서 분리(해당 엔티티 관리 대상에서 제외됨)
+
+            // 위에서 해당 엔티티를(100L) 준영속으로 처리했기 때문에 영속성 컨텍스트에서 캐시 처리가 되지 않고, DB에서 새로 조회
+            // 즉, SELECT 쿼리 두 번 조회됨
+            Member member2 = em.find(Member.class, 100L);
 
             tx.commit(); // commit 실행 시 자동으로 flush 실행
         } catch (Exception e) {
