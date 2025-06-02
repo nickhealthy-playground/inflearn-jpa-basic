@@ -140,26 +140,52 @@ public class JpaMain {
 //            emf.close();
 //        }
 
+//        /**
+//         * 영속성 컨텍스트5 - 준영속
+//         * - 영속 -> 준영속: 영속 상태의 엔티티가 영속성 컨텍스트에서 분리(detached)
+//         * - 영속성 컨텍스트가 제공하는 기능을 사용 못함, 관리 대상 X
+//         */
+//        try {
+//            // 100L ID를 가진 멤버를 저장
+////            Member member = new Member(100L, "memberA");
+////            em.persist(member);
+//
+//            Member member = em.find(Member.class, 100L);
+//            member.setUserName("memberB"); // 엔티티 변경 시 영속성 컨텍스트의 쓰기 지연에 의해 커밋 시점에 변경분이 반영되어야 함
+//
+//            em.detach(member); // 영속성 컨텍스트에서 분리(해당 엔티티 관리 대상에서 제외됨)
+//
+//            // 위에서 해당 엔티티를(100L) 준영속으로 처리했기 때문에 영속성 컨텍스트에서 캐시 처리가 되지 않고, DB에서 새로 조회
+//            // 즉, SELECT 쿼리 두 번 조회됨
+//            Member member2 = em.find(Member.class, 100L);
+//
+//            tx.commit(); // commit 실행 시 자동으로 flush 실행
+//        } catch (Exception e) {
+//            tx.rollback();
+//        } finally {
+//            em.close();
+//            emf.close();
+//        }
+
         /**
-         * 영속성 컨텍스트5 - 준영속
-         * - 영속 -> 준영속: 영속 상태의 엔티티가 영속성 컨텍스트에서 분리(detached)
-         * - 영속성 컨텍스트가 제공하는 기능을 사용 못함, 관리 대상 X
+         * 기본 키 매핑 주의점 - @GeneratedValue - IDENTITY 설정
+         * - em.persist 시점 데이터베이스 커밋
+         * - 영속성 컨텍스트 특성에 따른 JPA의 예외상황
+         *   1. @GeneratedValue - IDENTITY 설정은 PK 저장을 데이터베이스에 위임하는 형태.
+         *   2. 따라서 PK 값을 애플리케이션 단에서 설정하지도 않고, 확인할 수도 없다.
+         *   3. 하지만 그렇게 되면 영속성 컨텍스트에서 해당 엔티티 조회가 불가능하기 때문에
+         *   4. 이 경우에만 예외로 JPA에서 em.persist 메서드 호출 시점에 데이터베이스에 커밋한다.
          */
         try {
-            // 100L ID를 가진 멤버를 저장
-//            Member member = new Member(100L, "memberA");
-//            em.persist(member);
+            Member member = new Member();
+            member.setUserName("C");
 
-            Member member = em.find(Member.class, 100L);
-            member.setUserName("memberB"); // 엔티티 변경 시 영속성 컨텍스트의 쓰기 지연에 의해 커밋 시점에 변경분이 반영되어야 함
+            System.out.println("==================");
+            em.persist(member); // 해당 라인에서 데이터베이스에 실제로 반영
+            System.out.println("member.getId() = " + member.getId());
+            System.out.println("==================");
 
-            em.detach(member); // 영속성 컨텍스트에서 분리(해당 엔티티 관리 대상에서 제외됨)
-
-            // 위에서 해당 엔티티를(100L) 준영속으로 처리했기 때문에 영속성 컨텍스트에서 캐시 처리가 되지 않고, DB에서 새로 조회
-            // 즉, SELECT 쿼리 두 번 조회됨
-            Member member2 = em.find(Member.class, 100L);
-
-            tx.commit(); // commit 실행 시 자동으로 flush 실행
+            tx.commit();
         } catch (Exception e) {
             tx.rollback();
         } finally {
