@@ -1,9 +1,6 @@
 package hellojpa;
 
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityManagerFactory;
-import jakarta.persistence.EntityTransaction;
-import jakarta.persistence.Persistence;
+import jakarta.persistence.*;
 
 import java.util.List;
 
@@ -80,37 +77,64 @@ public class JpaMain {
 //        }
 
 
+//        /**
+//         * 영속성 컨텍스트2 - 쓰기 지연
+//         */
+//        try {
+//            Member member1 = new Member(150L, "A");
+//            Member member2 = new Member(160L, "B");
+//            em.persist(member1);
+//            em.persist(member2);
+//
+//            System.out.println("======================"); // 해당 라인 이후에 insert 쿼리를 모아서 commit
+//
+//            tx.commit();
+//        } catch (Exception e) {
+//            tx.rollback();
+//        } finally {
+//            em.close();
+//            emf.close();
+//        }
+//
+//        /**
+//         * 영속성 컨텍스트3 - 변경 감지
+//         */
+//        try {
+//            Member member = em.find(Member.class, 150L);
+//            System.out.println("member.getId() = " + member.getId());
+//            System.out.println("member.getName() = " + member.getName()); // B
+//            // em.persist() 메서드를 호출하지 않아도 commit 시점에 값이 DB에 반영
+//            // JPA는 컬렉션을 다루듯이(em.find) 매커니즘이 설계 되었기 때문에, 따로 반영하는 코드를 작성하지 않아도 변경사항이 있으면 이전 스냅샷과 비교해 변경분을 곧바로 반영함
+//            member.setName("ZZZZ");
+//
+//            tx.commit();
+//        } catch (Exception e) {
+//            tx.rollback();
+//        } finally {
+//            em.close();
+//            emf.close();
+//        }
+
         /**
-         * 영속성 컨텍스트2 - 쓰기 지연
-         */
+        * 영속성 컨텍스트4 - em.flush()
+         * - 해당 메서드를 호출해도 영속성 컨텍스트를 비우지 않음
+         * - 영속성 컨텍스트의 변경 내용을 데이터베이스에 동기화
+        */
         try {
-            Member member1 = new Member(150L, "A");
-            Member member2 = new Member(160L, "B");
+            Member member1 = new Member(200L, "A");
+            Member member2 = new Member(300L, "B");
+            Member member3 = new Member(400L, "C");
+
             em.persist(member1);
             em.persist(member2);
+            em.persist(member3);
 
-            System.out.println("======================"); // 해당 라인 이후에 insert 쿼리를 모아서 commit
+            TypedQuery<Member> query = em.createQuery("select m from Member as m", Member.class);
+            List<Member> resultList = query.getResultList(); // JPQL 쿼리 실행 시 자동으로 flush 실행
+            System.out.println("========="); // 따라서 커밋 이전이지만 flush를 통해 데이터베이스에 저장된 값이 있으므로 쿼리 조회 시 조회가 가능함
+            System.out.println("resultList = " + resultList);
 
-            tx.commit();
-        } catch (Exception e) {
-            tx.rollback();
-        } finally {
-            em.close();
-            emf.close();
-        }
-
-        /**
-         * 영속성 컨텍스트3 - 변경 감지
-         */
-        try {
-            Member member = em.find(Member.class, 150L);
-            System.out.println("member.getId() = " + member.getId());
-            System.out.println("member.getName() = " + member.getName()); // B
-            // em.persist() 메서드를 호출하지 않아도 commit 시점에 값이 DB에 반영
-            // JPA는 컬렉션을 다루듯이(em.find) 매커니즘이 설계 되었기 때문에, 따로 반영하는 코드를 작성하지 않아도 변경사항이 있으면 이전 스냅샷과 비교해 변경분을 곧바로 반영함
-            member.setName("ZZZZ");
-
-            tx.commit();
+            tx.commit(); // commit 실행 시 자동으로 flush 실행
         } catch (Exception e) {
             tx.rollback();
         } finally {
