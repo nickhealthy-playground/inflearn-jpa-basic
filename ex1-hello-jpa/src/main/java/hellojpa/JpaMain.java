@@ -14,8 +14,8 @@ public class JpaMain {
         EntityManager em = emf.createEntityManager();
 
         EntityTransaction tx = em.getTransaction();
+        tx.begin();
 //        try {
-//            tx.begin();
 //            Member member = new Member();
 //            member.setId(2L);
 //            member.setName("helloB");
@@ -35,15 +35,62 @@ public class JpaMain {
          * - <b>JPQL은 엔티티 객체</b>를 대상으로 쿼리
          * - <b>SQL은 데이터베이스 테이블</b>을 대상으로 쿼리
          */
-        try {
-            List<Member> result = em.createQuery("select m from Member m", Member.class)
-                    .setFirstResult(5)
-                    .setMaxResults(8)
-                    .getResultList();
+//        try {
+//            List<Member> result = em.createQuery("select m from Member m", Member.class)
+//                    .setFirstResult(5)
+//                    .setMaxResults(8)
+//                    .getResultList();
+//
+//            for (Member member : result) {
+//                System.out.println("member.getName() = " + member.getName());
+//            }
+//            tx.commit();
+//        } catch (Exception e) {
+//            tx.rollback();
+//        } finally {
+//            em.close();
+//            emf.close();
+//        }
 
-            for (Member member : result) {
-                System.out.println("member.getName() = " + member.getName());
-            }
+        /**
+         * 영속성 컨텍스트1 - 1차 캐시
+         */
+//        try {
+//            // 비영속
+//            Member member = new Member();
+//            member.setId(100L);
+//            member.setName("HelloJPA");
+//
+//            System.out.println("=== BEFORE ===");
+//            em.persist(member); // 영속
+//            System.out.println("=== AFTER ===");
+//
+//            // find 메서드 두 번 호출했지만 한 번만 SELECT 쿼리 발생(영속성 컨텍스트에 저장된 캐시에서 객체를 찾음)
+//            Member member1 = em.find(Member.class, 100L);
+//            Member member2 = em.find(Member.class, 100L);
+//
+//            System.out.println("result = " + (member1 == member2));
+//
+//            tx.commit();
+//        } catch (Exception e) {
+//            tx.rollback();
+//        } finally {
+//            em.close();
+//            emf.close();
+//        }
+
+
+        /**
+         * 영속성 컨텍스트2 - 쓰기 지연
+         */
+        try {
+            Member member1 = new Member(150L, "A");
+            Member member2 = new Member(160L, "B");
+            em.persist(member1);
+            em.persist(member2);
+
+            System.out.println("======================"); // 해당 라인 이후에 insert 쿼리를 모아서 commit
+
             tx.commit();
         } catch (Exception e) {
             tx.rollback();
@@ -51,5 +98,25 @@ public class JpaMain {
             em.close();
             emf.close();
         }
+
+        /**
+         * 영속성 컨텍스트3 - 변경 감지
+         */
+        try {
+            Member member = em.find(Member.class, 150L);
+            System.out.println("member.getId() = " + member.getId());
+            System.out.println("member.getName() = " + member.getName()); // B
+            // em.persist() 메서드를 호출하지 않아도 commit 시점에 값이 DB에 반영
+            // JPA는 컬렉션을 다루듯이(em.find) 매커니즘이 설계 되었기 때문에, 따로 반영하는 코드를 작성하지 않아도 변경사항이 있으면 이전 스냅샷과 비교해 변경분을 곧바로 반영함
+            member.setName("ZZZZ");
+
+            tx.commit();
+        } catch (Exception e) {
+            tx.rollback();
+        } finally {
+            em.close();
+            emf.close();
+        }
+
     }
 }
