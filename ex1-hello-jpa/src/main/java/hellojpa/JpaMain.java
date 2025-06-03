@@ -167,22 +167,56 @@ public class JpaMain {
 //            emf.close();
 //        }
 
+//        /**
+//         * 기본 키 매핑 주의점 - @GeneratedValue - IDENTITY 설정
+//         * - em.persist 시점 데이터베이스 커밋
+//         * - 영속성 컨텍스트 특성에 따른 JPA의 예외상황
+//         *   1. @GeneratedValue - IDENTITY 설정은 PK 저장을 데이터베이스에 위임하는 형태.
+//         *   2. 따라서 PK 값을 애플리케이션 단에서 설정하지도 않고, 확인할 수도 없다.
+//         *   3. 하지만 그렇게 되면 영속성 컨텍스트에서 해당 엔티티 조회가 불가능하기 때문에
+//         *   4. 이 경우에만 예외로 JPA에서 em.persist 메서드 호출 시점에 데이터베이스에 커밋한다.
+//         */
+//        try {
+//            Member member = new Member();
+//            member.setUserName("C");
+//
+//            System.out.println("==================");
+//            em.persist(member); // 해당 라인에서 데이터베이스에 실제로 반영
+//            System.out.println("member.getId() = " + member.getId());
+//            System.out.println("==================");
+//
+//            tx.commit();
+//        } catch (Exception e) {
+//            tx.rollback();
+//        } finally {
+//            em.close();
+//            emf.close();
+//        }
+
         /**
-         * 기본 키 매핑 주의점 - @GeneratedValue - IDENTITY 설정
-         * - em.persist 시점 데이터베이스 커밋
-         * - 영속성 컨텍스트 특성에 따른 JPA의 예외상황
-         *   1. @GeneratedValue - IDENTITY 설정은 PK 저장을 데이터베이스에 위임하는 형태.
-         *   2. 따라서 PK 값을 애플리케이션 단에서 설정하지도 않고, 확인할 수도 없다.
-         *   3. 하지만 그렇게 되면 영속성 컨텍스트에서 해당 엔티티 조회가 불가능하기 때문에
-         *   4. 이 경우에만 예외로 JPA에서 em.persist 메서드 호출 시점에 데이터베이스에 커밋한다.
+         * 기본 키 매핑 - @GeneratedValue - SEQUENCE 설정
+         * - allocationSize 옵션을 설정해두면(기본값 50) 성능 최적화를 할 수 있다.
+         * - 시퀀스 값을 데이터베이스에서 먼저 불러와야 PK 값을 설정할 수 있기 때문에 SELECT 쿼리가 N번 발생하게 된다.
+         *   - N번 발생으로 성능 이슈를 해결하기 위해선 allocationSize 옵션을 사용하면 된다.
          */
         try {
-            Member member = new Member();
-            member.setUserName("C");
+            Member member1 = new Member();
+            member1.setUserName("A");
+
+            Member member2 = new Member();
+            member2.setUserName("A");
+
+            Member member3 = new Member();
+            member3.setUserName("A");
 
             System.out.println("==================");
-            em.persist(member); // 해당 라인에서 데이터베이스에 실제로 반영
-            System.out.println("member.getId() = " + member.getId());
+            em.persist(member1);
+            em.persist(member2);
+            em.persist(member3);
+
+            System.out.println("member1.id = " + member1.getId());
+            System.out.println("member2.id = " + member2.getId());
+            System.out.println("member3.id = " + member3.getId());
             System.out.println("==================");
 
             tx.commit();

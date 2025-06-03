@@ -7,11 +7,14 @@ import java.time.LocalDateTime;
 import java.util.Date;
 
 @Entity
-@Table(name = "MEMBER")
+@SequenceGenerator(
+        name = "MEMBER_SEQ_GENERATOR",
+        sequenceName="MEMBER_SEQ", //매핑할 데이터베이스 시퀀스 이름
+        initialValue = 1, allocationSize = 1) // allocationSize - 시퀀스 한 번 호출에 증가하는 수
 public class Member {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "MEMBER_SEQ_GENERATOR")
     private Long id;
 
     @Column(name = "userName", nullable = false)
