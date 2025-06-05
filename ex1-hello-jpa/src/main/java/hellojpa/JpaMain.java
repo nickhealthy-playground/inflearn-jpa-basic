@@ -2,6 +2,8 @@ package hellojpa;
 
 import jakarta.persistence.*;
 
+import java.util.List;
+
 public class JpaMain {
 
     public static void main(String[] args) {
@@ -227,11 +229,42 @@ public class JpaMain {
 //            emf.close();
 //        }
 
+//        /**
+//         * 6. 연관관계 매핑 기초 - 단방향 연관관계
+//         * - 데이터베이스와 객체의 연관관계는 외래키/참조라는 매커니즘 자체가 다르기 때문에
+//         * - 데이터베이스의 데이터 중심으로(외래키 방식) 엔티티를 설계하면 객체지향적으로 설계할 수 없다.
+//         * - 대신 객체지향적으로 설계하기 위해 연관관계에 있는 엔티티를 참조(Member 안에 Team 필드 설정)하는 방식으로 설계한다.
+//         */
+//        try {
+//            // 팀 저장
+//            Team team = new Team();
+//            team.setName("TeamA");
+//            em.persist(team);
+//
+//            // 멤버 저장
+//            Member member = new Member();
+//            member.setUserName("member");
+//            member.setTeam(team);
+//            em.persist(member);
+//
+//            Member findMember = em.find(Member.class, member.getId());
+//            Team findTeam = findMember.getTeam();
+//            System.out.println("findTeam.getName() = " + findTeam.getName());
+//
+//            tx.commit();
+//        } catch (Exception e) {
+//            tx.rollback();
+//        } finally {
+//            em.close();
+//            emf.close();
+//        }
+
         /**
-         * 6. 연관관계 매핑 기초 - 단방향 연관관계
-         * - 데이터베이스와 객체의 연관관계는 외래키/참조라는 매커니즘 자체가 다르기 때문에
-         * - 데이터베이스의 데이터 중심으로(외래키 방식) 엔티티를 설계하면 객체지향적으로 설계할 수 없다.
-         * - 대신 객체지향적으로 설계하기 위해 연관관계에 있는 엔티티를 참조(Member 안에 Team 필드 설정)하는 방식으로 설계한다.
+         * 6. 연관관계 매핑 기초 - 연관관계의 주인1
+         * - 연관관계의 주인은 데이터베이스 테이블에서 외래키를 가지는 쪽의 엔티티에서 설정한다.
+         * - 연관관계의 주인의 반대편은 mappedby 키워드를 사용하여 '연관관계가 어떤 엔티티에 의해 매핑되었다는 것(Team 엔티티의 members 필드)'을 명시해준다.
+         * - 연관관계의 주인만 삽입/수정이 가능하다.
+         * - 연관관계의 주인의 반대편은 '읽기'만 가능하다.
          */
         try {
             // 팀 저장
@@ -245,9 +278,16 @@ public class JpaMain {
             member.setTeam(team);
             em.persist(member);
 
+            em.flush();
+            em.clear();
+
             Member findMember = em.find(Member.class, member.getId());
             Team findTeam = findMember.getTeam();
-            System.out.println("findTeam.getName() = " + findTeam.getName());
+
+            List<Member> members = findTeam.getMembers();
+            for (Member m : members) {
+                System.out.println("member.username = " + m.getUserName());
+            }
 
             tx.commit();
         } catch (Exception e) {
