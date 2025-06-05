@@ -193,31 +193,61 @@ public class JpaMain {
 //            emf.close();
 //        }
 
+//        /**
+//         * 기본 키 매핑 - @GeneratedValue - SEQUENCE 설정
+//         * - allocationSize 옵션을 설정해두면(기본값 50) 성능 최적화를 할 수 있다.
+//         * - 시퀀스 값을 데이터베이스에서 먼저 불러와야 PK 값을 설정할 수 있기 때문에 SELECT 쿼리가 N번 발생하게 된다.
+//         *   - N번 발생으로 성능 이슈를 해결하기 위해선 allocationSize 옵션을 사용하면 된다.
+//         */
+//        try {
+//            Member member1 = new Member();
+//            member1.setUserName("A");
+//
+//            Member member2 = new Member();
+//            member2.setUserName("A");
+//
+//            Member member3 = new Member();
+//            member3.setUserName("A");
+//
+//            System.out.println("==================");
+//            em.persist(member1);
+//            em.persist(member2);
+//            em.persist(member3);
+//
+//            System.out.println("member1.id = " + member1.getId());
+//            System.out.println("member2.id = " + member2.getId());
+//            System.out.println("member3.id = " + member3.getId());
+//            System.out.println("==================");
+//
+//            tx.commit();
+//        } catch (Exception e) {
+//            tx.rollback();
+//        } finally {
+//            em.close();
+//            emf.close();
+//        }
+
         /**
-         * 기본 키 매핑 - @GeneratedValue - SEQUENCE 설정
-         * - allocationSize 옵션을 설정해두면(기본값 50) 성능 최적화를 할 수 있다.
-         * - 시퀀스 값을 데이터베이스에서 먼저 불러와야 PK 값을 설정할 수 있기 때문에 SELECT 쿼리가 N번 발생하게 된다.
-         *   - N번 발생으로 성능 이슈를 해결하기 위해선 allocationSize 옵션을 사용하면 된다.
+         * 6. 연관관계 매핑 기초 - 단방향 연관관계
+         * - 데이터베이스와 객체의 연관관계는 외래키/참조라는 매커니즘 자체가 다르기 때문에
+         * - 데이터베이스의 데이터 중심으로(외래키 방식) 엔티티를 설계하면 객체지향적으로 설계할 수 없다.
+         * - 대신 객체지향적으로 설계하기 위해 연관관계에 있는 엔티티를 참조(Member 안에 Team 필드 설정)하는 방식으로 설계한다.
          */
         try {
-            Member member1 = new Member();
-            member1.setUserName("A");
+            // 팀 저장
+            Team team = new Team();
+            team.setName("TeamA");
+            em.persist(team);
 
-            Member member2 = new Member();
-            member2.setUserName("A");
+            // 멤버 저장
+            Member member = new Member();
+            member.setUserName("member");
+            member.setTeam(team);
+            em.persist(member);
 
-            Member member3 = new Member();
-            member3.setUserName("A");
-
-            System.out.println("==================");
-            em.persist(member1);
-            em.persist(member2);
-            em.persist(member3);
-
-            System.out.println("member1.id = " + member1.getId());
-            System.out.println("member2.id = " + member2.getId());
-            System.out.println("member3.id = " + member3.getId());
-            System.out.println("==================");
+            Member findMember = em.find(Member.class, member.getId());
+            Team findTeam = findMember.getTeam();
+            System.out.println("findTeam.getName() = " + findTeam.getName());
 
             tx.commit();
         } catch (Exception e) {

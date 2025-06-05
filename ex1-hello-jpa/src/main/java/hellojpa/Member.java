@@ -20,6 +20,10 @@ public class Member {
     @Column(name = "userName", nullable = false)
     private String userName;
 
+    @ManyToOne
+    @JoinColumn(name = "TEAM_ID")
+    private Team team;
+
     private int age;
 
     @Enumerated(EnumType.STRING)
@@ -57,6 +61,14 @@ public class Member {
 
     public void setUserName(String userName) {
         this.userName = userName;
+    }
+
+    public Team getTeam() {
+        return team;
+    }
+
+    public void setTeam(Team team) {
+        this.team = team;
     }
 
     public int getAge() {
