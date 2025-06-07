@@ -4,7 +4,9 @@ import jakarta.persistence.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 @Entity
 @SequenceGenerator(
@@ -27,6 +29,9 @@ public class Member {
     @OneToOne
     @JoinColumn(name = "LOCKER_ID")
     private Locker locker;
+
+    @OneToMany(mappedBy = "member")
+    private List<MemberProducts> memberProducts = new ArrayList<>();
 
     private int age;
 
