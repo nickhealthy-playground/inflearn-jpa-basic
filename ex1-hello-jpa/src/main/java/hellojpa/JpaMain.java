@@ -338,7 +338,8 @@ public class JpaMain {
 //
 
         /**
-         *
+         * 8. 고급매핑 - 상속관계 조인 전략
+         * - @Inheritance(strategy = InheritanceType.JOINED) 해당 어노테이션을 통해 상속 관계를 구축(데이터베이스의 슈퍼 - 서브 모델)
          */
         try {
             Movie movie = new Movie();
