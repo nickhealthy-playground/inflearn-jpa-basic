@@ -24,6 +24,10 @@ public class Member {
     @JoinColumn(name = "TEAM_ID")
     private Team team;
 
+    @OneToOne
+    @JoinColumn(name = "LOCKER_ID")
+    private Locker locker;
+
     private int age;
 
     @Enumerated(EnumType.STRING)
