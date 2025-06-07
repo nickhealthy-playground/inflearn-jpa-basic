@@ -297,36 +297,63 @@ public class JpaMain {
 //            emf.close();
 //        }
 
+//        /**
+//         * 6. 연관관계 매핑 기초 - 연관관계의 주인2 주의점
+//         *  6.1. 연관관계 매핑에서 가장 많이 하는 실수는 연관관계의 주인쪽에 값을 세팅하지 않는 것이다. 연관관계의 주인에 값을 세팅하지 않으면 값이 반영되지 않음.
+//         *  6.2. 연관관계 매핑에서 값을 세팅해줄 땐 객체지향적인 관점에서 양쪽 모두 세팅해주자.
+//         *     순수 자바코드로 테스트 코드를 작성할 때도 있는데 연관관계 주인 쪽에만 값을 세팅하면 장애로 이어질 수 있다.
+//         *     값을 양쪽 모두 세팅해줄 때, 편의 메서드를 따로 만들어서 한 메서드 안에서 값을 세팅하도록 처리하자.
+//         *  6.3. 엔티티를 설계할 땐 단방향만 우선 설정하고 양방향은 나중에 추가해도 늦지 않다. 잘 생각해보면 어차피 데이터베이스 테이블에는 영향이 가지 않는다.
+//         */
+//        try {
+//            // 팀 저장
+//            Team team = new Team();
+//            team.setName("TeamA");
+//            em.persist(team);
+//
+//            // 멤버 저장
+//            Member member = new Member();
+//            member.setUserName("member");
+//            member.changeTeam(team); // 편의 메서드로 변경
+//            em.persist(member);
+//
+//            // team.getMembers().add(this);
+//            Member findMember = em.find(Member.class, member.getId());
+//            Team findTeam = findMember.getTeam();
+//
+//            System.out.println("========================");
+//            List<Member> members = findTeam.getMembers();
+//            for (Member m : members) {
+//                System.out.println("member.username = " + m.getUserName());
+//            }
+//            System.out.println("========================");
+//
+//            tx.commit();
+//        } catch (Exception e) {
+//            tx.rollback();
+//        } finally {
+//            em.close();
+//            emf.close();
+//        }
+//
+
         /**
-         * 6. 연관관계 매핑 기초 - 연관관계의 주인2 주의점
-         *  6.1. 연관관계 매핑에서 가장 많이 하는 실수는 연관관계의 주인쪽에 값을 세팅하지 않는 것이다. 연관관계의 주인에 값을 세팅하지 않으면 값이 반영되지 않음.
-         *  6.2. 연관관계 매핑에서 값을 세팅해줄 땐 객체지향적인 관점에서 양쪽 모두 세팅해주자.
-         *     순수 자바코드로 테스트 코드를 작성할 때도 있는데 연관관계 주인 쪽에만 값을 세팅하면 장애로 이어질 수 있다.
-         *     값을 양쪽 모두 세팅해줄 때, 편의 메서드를 따로 만들어서 한 메서드 안에서 값을 세팅하도록 처리하자.
-         *  6.3. 엔티티를 설계할 땐 단방향만 우선 설정하고 양방향은 나중에 추가해도 늦지 않다. 잘 생각해보면 어차피 데이터베이스 테이블에는 영향이 가지 않는다.
+         *
          */
         try {
-            // 팀 저장
-            Team team = new Team();
-            team.setName("TeamA");
-            em.persist(team);
+            Movie movie = new Movie();
+            movie.setDirector("aaaa");
+            movie.setActor("bbb");
+            movie.setName("바람과 함께 사라지다.");
+            movie.setPrice(10000);
 
-            // 멤버 저장
-            Member member = new Member();
-            member.setUserName("member");
-            member.changeTeam(team); // 편의 메서드로 변경
-            em.persist(member);
+            em.persist(movie);
 
-            // team.getMembers().add(this);
-            Member findMember = em.find(Member.class, member.getId());
-            Team findTeam = findMember.getTeam();
+            em.flush();
+            em.clear();
 
-            System.out.println("========================");
-            List<Member> members = findTeam.getMembers();
-            for (Member m : members) {
-                System.out.println("member.username = " + m.getUserName());
-            }
-            System.out.println("========================");
+            Movie findMovie = em.find(Movie.class, movie.getId());
+            System.out.println("findMovie = " + findMovie);
 
             tx.commit();
         } catch (Exception e) {
