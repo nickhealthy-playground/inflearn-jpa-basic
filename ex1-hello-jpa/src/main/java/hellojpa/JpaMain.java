@@ -388,47 +388,82 @@ public class JpaMain {
 //            emf.close();
 //        }
 
+//        /**
+//         * 9. 프록시와 연관관계 관리 - 프록시
+//         * - em.find: 데이터베이스를 통해서 실제 엔티티 조회
+//         * - em.reference: 데이터베이스 조회를 미루는 가짜(프록시) 엔티티 객체 조회
+//         */
+//        try {
+//            Member member = new Member();
+//            member.setUserName("USER1");
+//
+//            em.persist(member);
+//
+//            em.flush();
+//            em.clear();
+//
+//            /* 프록시의 인스턴스 초기화 및 동작 - 지연로딩 */
+//            Member reference = em.getReference(Member.class, member.getId());
+//            System.out.println("reference.getId() = " + reference.getId());
+//            // 프록시 객체가 엔티티를 실제 사용할 때 영속성 컨텍스트에서 SELECT 쿼리를 날려 엔티티를 가져온다.
+//            System.out.println("reference.getUserName() = " + reference.getUserName()); // 해당 라인에서 프록시 target 인스턴스 초기화 및 SELECT 쿼리 발생
+//
+//
+//            /* 조회 순서에 따른 조회 대상 변경(엔티티 vs 프록시)
+//            * - 어떤 순서로 조회하는냐에 따라 엔티티나 프록시가 반환된다.
+//            * - JPA에서는 한 트랜잭션 안에서 객체의 동일성을('==') 보장하기 위해 em.find, em.reference로 조회된 것 중 먼저 조회된 객체로 반환한다.
+//            *  */
+//            // CASE1. 엔티티가 조회되는 경우
+////            Member findMember = em.find(Member.class, member.getId());
+////            System.out.println("findMember.getClass() = " + findMember.getClass());
+////            System.out.println("findMember.getId() = " + findMember.getId());
+////            System.out.println("findMember.getUserName() = " + findMember.getUserName());
+////
+////            Member reference = em.getReference(Member.class, findMember.getId());
+////            System.out.println("reference = " + reference.getClass());
+//
+//            // CASE2. 프록시가 조회되는 경우
+////            Member reference = em.getReference(Member.class, member.getId());
+////            System.out.println("reference = " + reference.getClass());
+////
+////            Member findMember = em.find(Member.class, member.getId());
+////            System.out.println("findMember.getClass() = " + findMember.getClass());
+//
+//
+//            tx.commit();
+//        } catch (Exception e) {
+//            tx.rollback();
+//        } finally {
+//            em.close();
+//            emf.close();
+//        }
+
         /**
-         * 9. 프록시와 연관관계 관리 - 프록시
-         * - em.find: 데이터베이스를 통해서 실제 엔티티 조회
-         * - em.reference: 데이터베이스 조회를 미루는 가짜(프록시) 엔티티 객체 조회
+         * 9. 프록시와 연관관계 관리 - 즉시 로딩과 지연 로딩
+         * - 지연 로딩 LAZY을 사용해서 프록시로 조회(필요한 시점에 로딩)
+         * - 즉시 로딩 EAGER을 사용해서 엔티티 바로 조회(MEMBER, TEAM 같이 조회하는 경우가 많을 경우 즉시 로딩이 유리)
          */
         try {
+            Team team = new Team();
+            team.setName("TeamA");
+            em.persist(team);
+
             Member member = new Member();
             member.setUserName("USER1");
-
+            member.changeTeam(team); // 편의 메서드(연관관계 주인/가짜 주인 양쪽 값 세팅)
             em.persist(member);
 
             em.flush();
             em.clear();
 
-            /* 프록시의 인스턴스 초기화 및 동작 - 지연로딩 */
-            Member reference = em.getReference(Member.class, member.getId());
-            System.out.println("reference.getId() = " + reference.getId());
-            // 프록시 객체가 엔티티를 실제 사용할 때 영속성 컨텍스트에서 SELECT 쿼리를 날려 엔티티를 가져온다.
-            System.out.println("reference.getUserName() = " + reference.getUserName()); // 해당 라인에서 프록시 target 인스턴스 초기화 및 SELECT 쿼리 발생
+            Member findMember = em.find(member.getClass(), member.getId());
+            System.out.println("findMember.getClass() = " + findMember.getClass()); // LAZY 설정: 프록시 객체, EAGER 설정: 엔티티 객체
 
-
-            /* 조회 순서에 따른 조회 대상 변경(엔티티 vs 프록시)
-            * - 어떤 순서로 조회하는냐에 따라 엔티티나 프록시가 반환된다.
-            * - JPA에서는 한 트랜잭션 안에서 객체의 동일성을('==') 보장하기 위해 em.find, em.reference로 조회된 것 중 먼저 조회된 객체로 반환한다.
-            *  */
-            // CASE1. 엔티티가 조회되는 경우
-//            Member findMember = em.find(Member.class, member.getId());
-//            System.out.println("findMember.getClass() = " + findMember.getClass());
-//            System.out.println("findMember.getId() = " + findMember.getId());
-//            System.out.println("findMember.getUserName() = " + findMember.getUserName());
-//
-//            Member reference = em.getReference(Member.class, findMember.getId());
-//            System.out.println("reference = " + reference.getClass());
-
-            // CASE2. 프록시가 조회되는 경우
-//            Member reference = em.getReference(Member.class, member.getId());
-//            System.out.println("reference = " + reference.getClass());
-//
-//            Member findMember = em.find(Member.class, member.getId());
-//            System.out.println("findMember.getClass() = " + findMember.getClass());
-
+            System.out.println("=====================");
+            // 지연 로딩 LAZY을 사용해서 프록시로 조회(필요한 시점에 로딩)
+            // 실제 team을 사용하는 시점에 초기화(DB 조회)
+            findMember.getTeam().getName();
+            System.out.println("=====================");
 
             tx.commit();
         } catch (Exception e) {
@@ -437,6 +472,7 @@ public class JpaMain {
             em.close();
             emf.close();
         }
+
 
 
     }
