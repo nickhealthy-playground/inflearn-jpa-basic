@@ -366,19 +366,69 @@ public class JpaMain {
 //        }
 
 
+//        /**
+//         * 8. 고급매핑 - @MappedSuperclass(매핑 정보 상속)
+//         * - 상속 관계와 달리 공통으로 사용하는 속성을 한 곳에 모아둔다.
+//         * - JPA에서는 @Entity, @MappedSuperclass 어노테이션을 붙이지 않으면 다른 클래스에 상속할 수 없다.
+//         */
+//        try {
+//            Member member = new Member();
+//            member.setUserName("USER1");
+//            member.setCreateBy("JOO");
+//            member.setCreateDate(LocalDateTime.now());
+//
+//            em.flush();
+//            em.clear();
+//
+//            tx.commit();
+//        } catch (Exception e) {
+//            tx.rollback();
+//        } finally {
+//            em.close();
+//            emf.close();
+//        }
+
         /**
-         * 8. 고급매핑 - @MappedSuperclass(매핑 정보 상속)
-         * - 상속 관계와 달리 공통으로 사용하는 속성을 한 곳에 모아둔다.
-         * - JPA에서는 @Entity, @MappedSuperclass 어노테이션을 붙이지 않으면 다른 클래스에 상속할 수 없다.
+         * 9. 프록시와 연관관계 관리 - 프록시
+         * - em.find: 데이터베이스를 통해서 실제 엔티티 조회
+         * - em.reference: 데이터베이스 조회를 미루는 가짜(프록시) 엔티티 객체 조회
          */
         try {
             Member member = new Member();
             member.setUserName("USER1");
-            member.setCreateBy("JOO");
-            member.setCreateDate(LocalDateTime.now());
+
+            em.persist(member);
 
             em.flush();
             em.clear();
+
+            /* 프록시의 인스턴스 초기화 및 동작 - 지연로딩 */
+            Member reference = em.getReference(Member.class, member.getId());
+            System.out.println("reference.getId() = " + reference.getId());
+            // 프록시 객체가 엔티티를 실제 사용할 때 영속성 컨텍스트에서 SELECT 쿼리를 날려 엔티티를 가져온다.
+            System.out.println("reference.getUserName() = " + reference.getUserName()); // 해당 라인에서 프록시 target 인스턴스 초기화 및 SELECT 쿼리 발생
+
+
+            /* 조회 순서에 따른 조회 대상 변경(엔티티 vs 프록시)
+            * - 어떤 순서로 조회하는냐에 따라 엔티티나 프록시가 반환된다.
+            * - JPA에서는 한 트랜잭션 안에서 객체의 동일성을('==') 보장하기 위해 em.find, em.reference로 조회된 것 중 먼저 조회된 객체로 반환한다.
+            *  */
+            // CASE1. 엔티티가 조회되는 경우
+//            Member findMember = em.find(Member.class, member.getId());
+//            System.out.println("findMember.getClass() = " + findMember.getClass());
+//            System.out.println("findMember.getId() = " + findMember.getId());
+//            System.out.println("findMember.getUserName() = " + findMember.getUserName());
+//
+//            Member reference = em.getReference(Member.class, findMember.getId());
+//            System.out.println("reference = " + reference.getClass());
+
+            // CASE2. 프록시가 조회되는 경우
+//            Member reference = em.getReference(Member.class, member.getId());
+//            System.out.println("reference = " + reference.getClass());
+//
+//            Member findMember = em.find(Member.class, member.getId());
+//            System.out.println("findMember.getClass() = " + findMember.getClass());
+
 
             tx.commit();
         } catch (Exception e) {
