@@ -5,7 +5,6 @@ import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 @Entity
@@ -13,7 +12,7 @@ import java.util.List;
         name = "MEMBER_SEQ_GENERATOR",
         sequenceName="MEMBER_SEQ", //매핑할 데이터베이스 시퀀스 이름
         initialValue = 1, allocationSize = 1) // allocationSize - 시퀀스 한 번 호출에 증가하는 수
-public class Member {
+public class Member extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "MEMBER_SEQ_GENERATOR")
@@ -37,12 +36,6 @@ public class Member {
 
     @Enumerated(EnumType.STRING)
     private RoleType roleType;
-
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date createDate;
-
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date lastModifiedDate;
 
     // 최신버전에서는 LocalDate, LocalDateTime 타입 사용 시 @Temporal 어노테이션이 붙어 있지 않아도 SQL에 적절한 타입으로 지정 및 생성
     private LocalDate testLocalDate; // SQL - date 타입
@@ -95,22 +88,6 @@ public class Member {
 
     public void setRoleType(RoleType roleType) {
         this.roleType = roleType;
-    }
-
-    public Date getCreateDate() {
-        return createDate;
-    }
-
-    public void setCreateDate(Date createDate) {
-        this.createDate = createDate;
-    }
-
-    public Date getLastModifiedDate() {
-        return lastModifiedDate;
-    }
-
-    public void setLastModifiedDate(Date lastModifiedDate) {
-        this.lastModifiedDate = lastModifiedDate;
     }
 
     public LocalDate getTestLocalDate() {

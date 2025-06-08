@@ -2,6 +2,7 @@ package hellojpa;
 
 import jakarta.persistence.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public class JpaMain {
@@ -337,24 +338,47 @@ public class JpaMain {
 //        }
 //
 
+//        /**
+//         * 8. 고급매핑 - 상속관계 조인 전략
+//         * - @Inheritance(strategy = InheritanceType.JOINED) 해당 어노테이션을 통해 상속 관계를 구축(데이터베이스의 슈퍼 - 서브 모델)
+//         */
+//        try {
+//            Movie movie = new Movie();
+//            movie.setDirector("aaaa");
+//            movie.setActor("bbb");
+//            movie.setName("바람과 함께 사라지다.");
+//            movie.setPrice(10000);
+//
+//            em.persist(movie);
+//
+//            em.flush();
+//            em.clear();
+//
+//            Movie findMovie = em.find(Movie.class, movie.getId());
+//            System.out.println("findMovie = " + findMovie);
+//
+//            tx.commit();
+//        } catch (Exception e) {
+//            tx.rollback();
+//        } finally {
+//            em.close();
+//            emf.close();
+//        }
+
+
         /**
-         * 8. 고급매핑 - 상속관계 조인 전략
-         * - @Inheritance(strategy = InheritanceType.JOINED) 해당 어노테이션을 통해 상속 관계를 구축(데이터베이스의 슈퍼 - 서브 모델)
+         * 8. 고급매핑 - @MappedSuperclass(매핑 정보 상속)
+         * - 상속 관계와 달리 공통으로 사용하는 속성을 한 곳에 모아둔다.
+         * - JPA에서는 @Entity, @MappedSuperclass 어노테이션을 붙이지 않으면 다른 클래스에 상속할 수 없다.
          */
         try {
-            Movie movie = new Movie();
-            movie.setDirector("aaaa");
-            movie.setActor("bbb");
-            movie.setName("바람과 함께 사라지다.");
-            movie.setPrice(10000);
-
-            em.persist(movie);
+            Member member = new Member();
+            member.setUserName("USER1");
+            member.setCreateBy("JOO");
+            member.setCreateDate(LocalDateTime.now());
 
             em.flush();
             em.clear();
-
-            Movie findMovie = em.find(Movie.class, movie.getId());
-            System.out.println("findMovie = " + findMovie);
 
             tx.commit();
         } catch (Exception e) {
@@ -363,6 +387,7 @@ public class JpaMain {
             em.close();
             emf.close();
         }
+
 
     }
 }
