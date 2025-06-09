@@ -2,6 +2,8 @@ package jpabook.jpashop.domain;
 
 import jakarta.persistence.*;
 
+import static jakarta.persistence.FetchType.*;
+
 @Entity
 public class Delivery extends BaseEntity {
 
@@ -10,7 +12,7 @@ public class Delivery extends BaseEntity {
     @Column(name = "DELIVERY_ID")
     private Long id;
 
-    @OneToOne(mappedBy = "delivery")
+    @OneToOne(mappedBy = "delivery", fetch = LAZY)
     private Order order;
 
     private String city;
