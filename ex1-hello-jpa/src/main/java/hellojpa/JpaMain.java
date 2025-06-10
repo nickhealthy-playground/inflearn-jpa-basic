@@ -580,8 +580,9 @@ public class JpaMain {
             member.getFavoriteFood().add("족발");
             member.getFavoriteFood().add("피자");
 
-            member.getAddressHistory().add(new Address("old1", "street", "10000"));
-            member.getAddressHistory().add(new Address("old2", "street", "10000"));
+            // 값 타입 컬렉션을 엔티티로 승격해서 사용
+            member.getAddressHistory().add(new AddressEntity("old1", "street", "10000"));
+            member.getAddressHistory().add(new AddressEntity("old2", "street", "10000"));
 
             em.persist(member);
 
@@ -593,9 +594,9 @@ public class JpaMain {
             Member findMember = em.find(Member.class, member.getId()); // 여기까지 Member 객체만 조회
 
             // LAZY 로딩에 의해 이때 쿼리 조회
-            List<Address> addressHistory = findMember.getAddressHistory();
-            for (Address address : addressHistory) {
-                System.out.println("address.getCity() = " + address.getCity());
+            List<AddressEntity> addressHistory = findMember.getAddressHistory();
+            for (AddressEntity address : addressHistory) {
+                System.out.println("address.getCity() = " + address.getAddress().getCity());
             }
 
             // LAZY 로딩에 의해 이때 쿼리 조회
@@ -604,6 +605,26 @@ public class JpaMain {
                 System.out.println("s = " + s);
             }
 
+            // 값 타입 컬렉션 수정 예제
+            Address address = findMember.getAddress();
+            // 임베디드 타입(값 들을 모아놓은 객체)은 앞서 학습했던 것처럼 기존 인스턴스를 수정하는 것이 아니라, 새롭게 생성해서 수정해야 한다.(불변 객체 취급)
+            findMember.setAddress(new Address("newCity", address.getStreet(), address.getZipcode()));
+
+            // 값 타임 컬렉션 수정
+            // 치킨 -> 한식(delete -> insert 쿼리 발생)
+            findMember.getFavoriteFood().remove("치킨");
+            findMember.getFavoriteFood().add("한식");
+
+
+            /**
+             * 값 타입 컬렉션 수정 주의점(결론: 사용하지 말자)
+             * - 값 타입 컬렉션은 엔티티와 다르게 '식별자'가 따로 존재하지 않기 때문에 레코드 대상을 특정할 수 없음.
+             * - 따라서 엔티티와 연관된 값 타입 컬렉션의 레코드를 모두 delete 한 이후, insert 를 통해 수정할 레코드를 새로운 레코드로 갈아 끼우는 방식
+             * - 대안으로 '일대다 관계'를 활용하자
+             */
+//            // eqauls 기본적으로 사용해서 대상을 찾음, 따라서 equals, hashcode 오버라이딩 필요
+//            findMember.getAddressHistory().remove(new Address("old1", "street", "10000"));
+//            findMember.getAddressHistory().add(new Address("newCity1", "street", "10000"));
 
             tx.commit();
         } catch (Exception e) {
