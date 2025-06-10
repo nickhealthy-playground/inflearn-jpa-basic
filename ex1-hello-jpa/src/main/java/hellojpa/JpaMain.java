@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 
 public class JpaMain {
 
@@ -529,30 +530,80 @@ public class JpaMain {
 //            emf.close();
 //        }
 
+//        /**
+//         * 10. 값 타입 - 값 타입과 불변 객체
+//         * - 값 타입을 불변으로 만들어서 사전에 값이 동시에 변경되는 것을 방지해야 한다.
+//         * - 기본 타입은 call by value 이므로 기본적으로 불변 타입이고,
+//         * - 인스턴스는 call by address 이므로 객체에 대해서 불변 객체로 설정해야한다.(setter 제약, 생성자에서만 최초 값 설정)
+//         */
+//        try {
+//            Address address = new Address("city", "street", "10000");
+//
+//            Member member1 = new Member();
+//            member1.setUserName("USER1");
+//            member1.setHomeAddress(address);
+//
+//            // 이와 같이 값을 새로 만들어서 엔티티에 값을 세팅해야함
+//            Address copyAddress = new Address("city", "street", "10000");
+//
+//            Member member2 = new Member();
+//            member2.setUserName("USER2");
+//            member2.setHomeAddress(copyAddress);
+//
+//            member1.getHomeAddress().setCity("newCity");
+//
+//            em.persist(member1);
+//            em.persist(member2);
+//
+//            tx.commit();
+//        } catch (Exception e) {
+//            tx.rollback();
+//        } finally {
+//            em.close();
+//            emf.close();
+//        }
+
         /**
-         * 10. 값 타입 - 값 타입과 불변 객체
-         * - 값 타입을 불변으로 만들어서 사전에 값이 동시에 변경되는 것을 방지해야 한다.
-         * - 기본 타입은 call by value 이므로 기본적으로 불변 타입이고,
-         * - 인스턴스는 call by address 이므로 객체에 대해서 불변 객체로 설정해야한다.(setter 제약, 생성자에서만 최초 값 설정)
+         * 10. 값 타입 - 값 타입 컬렉션
+         * - 값 타입 컬렉션으로 별도의 테이블을 만들어도, Member 엔티티의 생명주기를 따라간다.
+         *   - 즉, Member 엔티티의 값을 persist 하면 cascade, orphanRemoval(고아객체 자동 삭제) 옵션이 자동으로 붙은 것으로 생각할 수 있다.
+         * - 값 타입 컬렉션은 기본 전략으로 LAZY 로딩을 사용한다. 즉, 실제로 사용할 때 쿼리를 호출한다.
          */
         try {
-            Address address = new Address("city", "street", "10000");
 
-            Member member1 = new Member();
-            member1.setUserName("USER1");
-            member1.setHomeAddress(address);
+            // 값 타입 저장 예제
+            Member member = new Member();
+            member.setUserName("USER1");
+            member.setAddress(new Address("homeCity", "street", "10000"));
 
-            // 이와 같이 값을 새로 만들어서 엔티티에 값을 세팅해야함
-            Address copyAddress = new Address("city", "street", "10000");
+            member.getFavoriteFood().add("치킨");
+            member.getFavoriteFood().add("족발");
+            member.getFavoriteFood().add("피자");
 
-            Member member2 = new Member();
-            member2.setUserName("USER2");
-            member2.setHomeAddress(copyAddress);
+            member.getAddressHistory().add(new Address("old1", "street", "10000"));
+            member.getAddressHistory().add(new Address("old2", "street", "10000"));
 
-            member1.getHomeAddress().setCity("newCity");
+            em.persist(member);
 
-            em.persist(member1);
-            em.persist(member2);
+            em.flush();
+            em.clear();
+
+            // 값 타입 조회 예제
+            System.out.println("==============START===============");
+            Member findMember = em.find(Member.class, member.getId()); // 여기까지 Member 객체만 조회
+
+            // LAZY 로딩에 의해 이때 쿼리 조회
+            List<Address> addressHistory = findMember.getAddressHistory();
+            for (Address address : addressHistory) {
+                System.out.println("address.getCity() = " + address.getCity());
+            }
+
+            // LAZY 로딩에 의해 이때 쿼리 조회
+            Set<String> favoriteFood = findMember.getFavoriteFood();
+            for (String s : favoriteFood) {
+                System.out.println("s = " + s);
+            }
+
 
             tx.commit();
         } catch (Exception e) {
@@ -561,5 +612,6 @@ public class JpaMain {
             em.close();
             emf.close();
         }
+
     }
 }
