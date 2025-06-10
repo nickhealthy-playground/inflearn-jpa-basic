@@ -508,8 +508,12 @@ public class JpaMain {
 //        }
 
 
+        /**
+         * 10. 값 타입 - 임베디드 타입
+         * - C언어의 구조체처럼 값들을(대부분 기본 타입) 모아놓은 사용자 정의 타입(클래스)
+         * - 장점: 여러 곳에서 재사용 가능하다.
+         */
         try {
-
             Member member = new Member();
             member.setUserName("USER1");
             member.setHomeAddress(new Address("nowon", "street", "10000"));
