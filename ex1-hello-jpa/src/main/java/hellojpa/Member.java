@@ -35,6 +35,17 @@ public class Member {
     @Embedded
     private Address homeAddress;
 
+    @Embedded
+    @AttributeOverrides({  // 중복되는 엔티티가 있다면 한 레코드에 중복되서 들어갈 수 없으므로 해당 어노테이션으로 컬럼명 재정의
+            @AttributeOverride(name="city",
+                    column=@Column(name="WORK_CITY")),
+            @AttributeOverride(name="street",
+                    column=@Column(name="WORK_STREET")),
+            @AttributeOverride(name="zipcode",
+                    column=@Column(name="WORK_ZIPCODE"))
+    })
+    private Address workAddress;
+
     public Long getId() {
         return id;
     }
