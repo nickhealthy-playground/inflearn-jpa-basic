@@ -12,7 +12,4 @@ public class Locker {
 
     private String username;
 
-    @OneToOne(mappedBy = "locker")
-    private Member member;
-
 }

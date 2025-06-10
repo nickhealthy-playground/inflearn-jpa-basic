@@ -12,7 +12,7 @@ import java.util.List;
         name = "MEMBER_SEQ_GENERATOR",
         sequenceName="MEMBER_SEQ", //매핑할 데이터베이스 시퀀스 이름
         initialValue = 1, allocationSize = 1) // allocationSize - 시퀀스 한 번 호출에 증가하는 수
-public class Member extends BaseEntity {
+public class Member {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "MEMBER_SEQ_GENERATOR")
@@ -21,27 +21,6 @@ public class Member extends BaseEntity {
     @Column(name = "userName", nullable = false)
     private String userName;
 
-//    @ManyToOne(fetch = FetchType.LAZY)
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "TEAM_ID")
-    private Team team;
-
-    @OneToOne
-    @JoinColumn(name = "LOCKER_ID")
-    private Locker locker;
-
-    @OneToMany(mappedBy = "member")
-    private List<MemberProducts> memberProducts = new ArrayList<>();
-
-    private int age;
-
-    @Enumerated(EnumType.STRING)
-    private RoleType roleType;
-
-    // 최신버전에서는 LocalDate, LocalDateTime 타입 사용 시 @Temporal 어노테이션이 붙어 있지 않아도 SQL에 적절한 타입으로 지정 및 생성
-    private LocalDate testLocalDate; // SQL - date 타입
-    private LocalDateTime testLocalDateTime; // SQL - timestamp 타입
-
     public Member() {
     }
 
@@ -49,6 +28,12 @@ public class Member extends BaseEntity {
         this.id = id;
         this.userName = userName;
     }
+
+    @Embedded
+    private Period workPeriod;
+
+    @Embedded
+    private Address homeAddress;
 
     public Long getId() {
         return id;
@@ -66,44 +51,19 @@ public class Member extends BaseEntity {
         this.userName = userName;
     }
 
-    public Team getTeam() {
-        return team;
+    public Period getWorkPeriod() {
+        return workPeriod;
     }
 
-    public void changeTeam(Team team) {
-        this.team = team;
-        team.getMembers().add(this);
+    public void setWorkPeriod(Period workPeriod) {
+        this.workPeriod = workPeriod;
     }
 
-    public int getAge() {
-        return age;
+    public Address getHomeAddress() {
+        return homeAddress;
     }
 
-    public void setAge(int age) {
-        this.age = age;
-    }
-
-    public RoleType getRoleType() {
-        return roleType;
-    }
-
-    public void setRoleType(RoleType roleType) {
-        this.roleType = roleType;
-    }
-
-    public LocalDate getTestLocalDate() {
-        return testLocalDate;
-    }
-
-    public void setTestLocalDate(LocalDate testLocalDate) {
-        this.testLocalDate = testLocalDate;
-    }
-
-    public LocalDateTime getTestLocalDateTime() {
-        return testLocalDateTime;
-    }
-
-    public void setTestLocalDateTime(LocalDateTime testLocalDateTime) {
-        this.testLocalDateTime = testLocalDateTime;
+    public void setHomeAddress(Address homeAddress) {
+        this.homeAddress = homeAddress;
     }
 }

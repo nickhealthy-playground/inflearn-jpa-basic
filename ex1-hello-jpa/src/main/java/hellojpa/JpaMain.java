@@ -473,31 +473,49 @@ public class JpaMain {
 //            emf.close();
 //        }
 
-        /**
-         * 9. 프록시와 연관관계 관리 - 영속성 전이(CASCADE)
-         * - Cascade는 단순히 persist 호출을 전파하는 것: 이 엔티티를 persist할 때 연관된 엔티티들도 같이 persist해라
-         * - 아래 예제에서는 em.persist(parent)만 해도 이와 관련된 em.persist(child) 호출을 자동화하는 것
-         * - 주의사항:
-         *   1. 영속 상태 엔티티가 비영속 상태인 엔티티를 참조하려고 할 때 '참조 무결성을 보장할 수 없음'으로 persist 되지 않음
-         *     - 즉, 영속 엔티티는 영속 엔티티만 참조할 수 있음
-         *   2. 외래 키 관리 주체와 엔티티 persist 순서에 따른 쿼리 동작 방식 주의(update 문 추가 발생 가능)
-         *     - 참조하는 엔티티보다 참조되는 엔티티(parent)를 먼저 persist 해야함
-         *     - 참조하는 엔티티(child)는 parent_id를 모르고 있기 때문에 먼저 persist 수행 시 child 엔티티가 저장되고,
-         *       참조되는 엔티티(parent)가 persist 될 때 parent_id를 얻고, 변경 감지(dirty check)에 의해 다시 update 문을 수행하게 됨
-         */
+//        /**
+//         * 9. 프록시와 연관관계 관리 - 영속성 전이(CASCADE)
+//         * - Cascade는 단순히 persist 호출을 전파하는 것: 이 엔티티를 persist할 때 연관된 엔티티들도 같이 persist해라
+//         * - 아래 예제에서는 em.persist(parent)만 해도 이와 관련된 em.persist(child) 호출을 자동화하는 것
+//         * - 주의사항:
+//         *   1. 영속 상태 엔티티가 비영속 상태인 엔티티를 참조하려고 할 때 '참조 무결성을 보장할 수 없음'으로 persist 되지 않음
+//         *     - 즉, 영속 엔티티는 영속 엔티티만 참조할 수 있음
+//         *   2. 외래 키 관리 주체와 엔티티 persist 순서에 따른 쿼리 동작 방식 주의(update 문 추가 발생 가능)
+//         *     - 참조하는 엔티티보다 참조되는 엔티티(parent)를 먼저 persist 해야함
+//         *     - 참조하는 엔티티(child)는 parent_id를 모르고 있기 때문에 먼저 persist 수행 시 child 엔티티가 저장되고,
+//         *       참조되는 엔티티(parent)가 persist 될 때 parent_id를 얻고, 변경 감지(dirty check)에 의해 다시 update 문을 수행하게 됨
+//         */
+//        try {
+//            Child child1 = new Child();
+//            Child child2 = new Child();
+//            child1.setName("child1");
+//            child2.setName("child2");
+//
+//            Parent parent = new Parent();
+//            parent.addChild(child1);
+//            parent.addChild(child2);
+//
+//            em.persist(parent);
+////            em.persist(child1);
+////            em.persist(child2);
+//
+//            tx.commit();
+//        } catch (Exception e) {
+//            tx.rollback();
+//        } finally {
+//            em.close();
+//            emf.close();
+//        }
+
+
         try {
-            Child child1 = new Child();
-            Child child2 = new Child();
-            child1.setName("child1");
-            child2.setName("child2");
 
-            Parent parent = new Parent();
-            parent.addChild(child1);
-            parent.addChild(child2);
+            Member member = new Member();
+            member.setUserName("USER1");
+            member.setHomeAddress(new Address("nowon", "street", "10000"));
+            member.setWorkPeriod(new Period());
 
-            em.persist(parent);
-//            em.persist(child1);
-//            em.persist(child2);
+            em.persist(member);
 
             tx.commit();
         } catch (Exception e) {
@@ -506,7 +524,6 @@ public class JpaMain {
             em.close();
             emf.close();
         }
-
 
     }
 }
