@@ -508,18 +508,51 @@ public class JpaMain {
 //        }
 
 
+//        /**
+//         * 10. 값 타입 - 임베디드 타입
+//         * - C언어의 구조체처럼 값들을(대부분 기본 타입) 모아놓은 사용자 정의 타입(클래스)
+//         * - 장점: 여러 곳에서 재사용 가능하다.
+//         */
+//        try {
+//            Member member = new Member();
+//            member.setUserName("USER1");
+//            member.setHomeAddress(new Address("nowon", "street", "10000"));
+//            member.setWorkPeriod(new Period());
+//
+//            em.persist(member);
+//
+//            tx.commit();
+//        } catch (Exception e) {
+//            tx.rollback();
+//        } finally {
+//            em.close();
+//            emf.close();
+//        }
+
         /**
-         * 10. 값 타입 - 임베디드 타입
-         * - C언어의 구조체처럼 값들을(대부분 기본 타입) 모아놓은 사용자 정의 타입(클래스)
-         * - 장점: 여러 곳에서 재사용 가능하다.
+         * 10. 값 타입 - 값 타입과 불변 객체
+         * - 값 타입을 불변으로 만들어서 사전에 값이 동시에 변경되는 것을 방지해야 한다.
+         * - 기본 타입은 call by value 이므로 기본적으로 불변 타입이고,
+         * - 인스턴스는 call by address 이므로 객체에 대해서 불변 객체로 설정해야한다.(setter 제약, 생성자에서만 최초 값 설정)
          */
         try {
-            Member member = new Member();
-            member.setUserName("USER1");
-            member.setHomeAddress(new Address("nowon", "street", "10000"));
-            member.setWorkPeriod(new Period());
+            Address address = new Address("city", "street", "10000");
 
-            em.persist(member);
+            Member member1 = new Member();
+            member1.setUserName("USER1");
+            member1.setHomeAddress(address);
+
+            // 이와 같이 값을 새로 만들어서 엔티티에 값을 세팅해야함
+            Address copyAddress = new Address("city", "street", "10000");
+
+            Member member2 = new Member();
+            member2.setUserName("USER2");
+            member2.setHomeAddress(copyAddress);
+
+            member1.getHomeAddress().setCity("newCity");
+
+            em.persist(member1);
+            em.persist(member2);
 
             tx.commit();
         } catch (Exception e) {
@@ -528,6 +561,5 @@ public class JpaMain {
             em.close();
             emf.close();
         }
-
     }
 }
