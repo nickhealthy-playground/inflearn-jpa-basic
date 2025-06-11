@@ -154,43 +154,85 @@ public class JpaMain {
 //            emf.close();
 //        }
 
+//        /**
+//         * 11. JPQL 기본 문법 - 조인
+//         * - 조인 종류
+//         *   - 내부 조인, 외부 조인, 세타 조인
+//         * - 조인 ON 기능 지원, 연관관계 관련 없는 엔티티 외부 조인 지원(하이버네이트 5.1 부터)
+//         */
+//        try {
+//            Team team = new Team();
+//            team.setName("teamA");
+//            em.persist(team);
+//
+//            Member member = new Member();
+//            member.setUsername("USER");
+//            member.setAge(10);
+//
+//            member.changeTeam(team); // 편의 메서드(양방향 값 설정)
+//            em.persist(member);
+//
+//            // 내부 조인(inner join)
+//            String query = "SELECT m FROM Member m INNER JOIN m.team t";
+//            List<Member> result = em.createQuery(query, Member.class).getResultList();
+//
+//            // 외부 조인(left/right outer join)
+//            String query2 = "SELECT m FROM Member m LEFT OUTER JOIN m.team t";
+//            List<Member> result2 = em.createQuery(query2, Member.class).getResultList();
+//
+//            // 세타 조인
+//            String query3 = "SELECT m FROM Member m, Team t";
+//            List<Member> result3 = em.createQuery(query3, Member.class).getResultList();
+//
+//            // ON - 조인 대상 필터링
+//            String query4 = "SELECT m FROM Member m left join m.team t on t.name = 'teamA'";
+//            List<Member> result4 = em.createQuery(query4, Member.class).getResultList();
+//
+//            // 연관관계 없는 엔티티 외부 조인
+//            String query5 = "SELECT m FROM Member m LEFT JOIN Team t ON m.username = t.name";
+//            List<Member> result5 = em.createQuery(query5, Member.class).getResultList();
+//
+//            tx.commit();
+//        } catch (Exception e) {
+//            tx.rollback();
+//        } finally {
+//            em.close();
+//            emf.close();
+//        }
+
         /**
-         * 11. JPQL 기본 문법 - 조인
-         * - 조인 종류
-         *   - 내부 조인, 외부 조인, 세타 조인
-         * - 조인 ON 기능 지원, 연관관계 관련 없는 엔티티 외부 조인 지원(하이버네이트 5.1 부터)
+         * 11. JPQL 기본 문법 - 서브 쿼리
+         * - 서브 쿼리 지원 함수
+         *   - [NOT] EXISTS: 서브 쿼리에 결과가 존재하면 참
+         *   - {ALL | ANY | SOME}
+         *     - ALL: 모두 만족하면 참
+         *     - ANY, SOME: 같은 의미, 조건을 하나라도 만족하면 참
+         *   - [NOT] IN: 서브 쿼리의 결과 중 하나라도 같은 것이 있으면 참
          */
         try {
-            Team team = new Team();
-            team.setName("teamA");
-            em.persist(team);
-
             Member member = new Member();
             member.setUsername("USER");
             member.setAge(10);
 
-            member.changeTeam(team); // 편의 메서드(양방향 값 설정)
+            Team team = new Team();
+            team.setName("teamA");
+
+            member.changeTeam(team);
+
             em.persist(member);
+            em.persist(team);
 
-            // 내부 조인(inner join)
-            String query = "SELECT m FROM Member m INNER JOIN m.team t";
-            List<Member> result = em.createQuery(query, Member.class).getResultList();
+            // 팀A 소속인 회원
+            String query = "SELECT m FROM Member m WHERE EXISTS(SELECT t FROM Team t WHERE t.name = 'teamA')";
+            List<Member> resultList = em.createQuery(query, Member.class).getResultList();
+            Member findMember = resultList.get(0);
+            System.out.println("findMember.getUsername() = " + findMember.getUsername());
 
-            // 외부 조인(left/right outer join)
-            String query2 = "SELECT m FROM Member m LEFT OUTER JOIN m.team t";
-            List<Member> result2 = em.createQuery(query2, Member.class).getResultList();
+            // 어떤 팀이든 팀에 소속된 회원
+            String query2 = "SELECT m FROM Member m WHERE m.team = ANY(SELECT t FROM Team t)";
+            List<Member> resultList2 = em.createQuery(query2, Member.class).getResultList();
+            System.out.println("resultList2.size() = " + resultList2.size());
 
-            // 세타 조인
-            String query3 = "SELECT m FROM Member m, Team t";
-            List<Member> result3 = em.createQuery(query3, Member.class).getResultList();
-
-            // ON - 조인 대상 필터링
-            String query4 = "SELECT m FROM Member m left join m.team t on t.name = 'teamA'";
-            List<Member> result4 = em.createQuery(query4, Member.class).getResultList();
-
-            // 연관관계 없는 엔티티 외부 조인
-            String query5 = "SELECT m FROM Member m LEFT JOIN Team t ON m.username = t.name";
-            List<Member> result5 = em.createQuery(query5, Member.class).getResultList();
 
             tx.commit();
         } catch (Exception e) {
