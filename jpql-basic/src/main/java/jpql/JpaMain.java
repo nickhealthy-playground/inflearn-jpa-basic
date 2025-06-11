@@ -202,12 +202,14 @@ public class JpaMain {
 
         /**
          * 11. JPQL 기본 문법 - 서브 쿼리
-         * - 서브 쿼리 지원 함수
+         * 1. 서브 쿼리 지원 함수
          *   - [NOT] EXISTS: 서브 쿼리에 결과가 존재하면 참
          *   - {ALL | ANY | SOME}
          *     - ALL: 모두 만족하면 참
          *     - ANY, SOME: 같은 의미, 조건을 하나라도 만족하면 참
          *   - [NOT] IN: 서브 쿼리의 결과 중 하나라도 같은 것이 있으면 참
+         *
+         * 2. JPA 서브 쿼리는 SELECT, FROM(하이버네이트 6이상), WHERE, HAVING 모두 가능
          */
         try {
             Member member = new Member();
