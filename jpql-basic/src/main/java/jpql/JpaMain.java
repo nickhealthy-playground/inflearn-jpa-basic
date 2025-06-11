@@ -1,10 +1,8 @@
 package jpql;
 
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityManagerFactory;
-import jakarta.persistence.EntityTransaction;
-import jakarta.persistence.Persistence;
+import jakarta.persistence.*;
 import jpql.entity.Member;
+import jpql.entity.Team;
 
 import java.util.List;
 
@@ -125,28 +123,74 @@ public class JpaMain {
 //            emf.close();
 //        }
 
+//        /**
+//         * 11. JPQL 기본 문법 - 페이징
+//         * - setFirstResult: 조회 시작 위치
+//         * - setMaxResult: 조회할 데이터 수
+//         */
+//        try {
+//
+//            for (int i = 0; i < 100; i++) {
+//                Member member = new Member();
+//                member.setUsername("USER" + i);
+//                member.setAge(i);
+//                em.persist(member);
+//            }
+//
+//            List<Member> resultList = em.createQuery("SELECT m FROM Member m order by age desc", Member.class)
+//                    .setFirstResult(0)
+//                    .setMaxResults(10)
+//                    .getResultList();
+//
+//            for (Member member : resultList) {
+//                System.out.println("member.getAge() = " + member.getAge());
+//            }
+//
+//            tx.commit();
+//        } catch (Exception e) {
+//            tx.rollback();
+//        } finally {
+//            em.close();
+//            emf.close();
+//        }
+
         /**
-         * 11. JPQL 기본 문법 - 페이징
-         * - setFirstResult: 조회 시작 위치
-         * - setMaxResult: 조회할 데이터 수
+         * 11. JPQL 기본 문법 - 조인
+         * - 조인 종류
+         *   - 내부 조인, 외부 조인, 세타 조인
+         * - 조인 ON 기능 지원, 연관관계 관련 없는 엔티티 외부 조인 지원(하이버네이트 5.1 부터)
          */
         try {
+            Team team = new Team();
+            team.setName("teamA");
+            em.persist(team);
 
-            for (int i = 0; i < 100; i++) {
-                Member member = new Member();
-                member.setUsername("USER" + i);
-                member.setAge(i);
-                em.persist(member);
-            }
+            Member member = new Member();
+            member.setUsername("USER");
+            member.setAge(10);
 
-            List<Member> resultList = em.createQuery("SELECT m FROM Member m order by age desc", Member.class)
-                    .setFirstResult(0)
-                    .setMaxResults(10)
-                    .getResultList();
+            member.changeTeam(team); // 편의 메서드(양방향 값 설정)
+            em.persist(member);
 
-            for (Member member : resultList) {
-                System.out.println("member.getAge() = " + member.getAge());
-            }
+            // 내부 조인(inner join)
+            String query = "SELECT m FROM Member m INNER JOIN m.team t";
+            List<Member> result = em.createQuery(query, Member.class).getResultList();
+
+            // 외부 조인(left/right outer join)
+            String query2 = "SELECT m FROM Member m LEFT OUTER JOIN m.team t";
+            List<Member> result2 = em.createQuery(query2, Member.class).getResultList();
+
+            // 세타 조인
+            String query3 = "SELECT m FROM Member m, Team t";
+            List<Member> result3 = em.createQuery(query3, Member.class).getResultList();
+
+            // ON - 조인 대상 필터링
+            String query4 = "SELECT m FROM Member m left join m.team t on t.name = 'teamA'";
+            List<Member> result4 = em.createQuery(query4, Member.class).getResultList();
+
+            // 연관관계 없는 엔티티 외부 조인
+            String query5 = "SELECT m FROM Member m LEFT JOIN Team t ON m.username = t.name";
+            List<Member> result5 = em.createQuery(query5, Member.class).getResultList();
 
             tx.commit();
         } catch (Exception e) {
