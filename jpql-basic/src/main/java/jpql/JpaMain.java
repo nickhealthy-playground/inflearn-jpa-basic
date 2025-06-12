@@ -396,44 +396,122 @@ public class JpaMain {
 //            emf.close();
 //        }
 
+//        /**
+//         * 12. JPQL 중급 문법 - 경로 표현식
+//         * 1. 경로 표현식: .(점)을 찍어 객체 그래프를 탐색하는 것
+//         *   - 상태 필드: 단순히 값을 저장하기 위한 필드(m.username)
+//         *   - 연관 필드: 연관관계를 위한 필드
+//         *     - 단일 값 연관 필드: target 대상이 하나인 엔티티(ex: @ManyToOne, @OneToOne, m.team)
+//         *     - 컬렉션 값 연관 필드: target 대상이 컬렉션(ex: @OneToMany, @ManyToMany, m.orders)
+//         * 2. 연관 필드는 기본적으로 '묵시적 내부 조인(inner join)'이 발생하게 되는데, 결론부터 말하면 '명시적 내부 조인'만 사용할 것.
+//         *   - 묵시적 조인은 쿼리 분석 파악이 쉽지 않음
+//         * 3. 연관 필드의 특징
+//         *   - 단일 값 연관 경로: 탐색O
+//         *   - 컬렉션 값 연관 경로: 컬렉션 탐색 X, 명시적 조인을 통해 별칭을 얻으면 별칭을 통해 탐색 가능.
+//         */
+//        try {
+//            Team team = new Team();
+//            team.setName("teamA");
+//            em.persist(team);
+//
+//            Member member1 = new Member();
+//            member1.setUsername("관리자1");
+//            member1.setAge(10);
+//            member1.changeTeam(team);
+//            em.persist(member1);
+//
+//            Member member2 = new Member();
+//            member2.setUsername("관리자2");
+//            member2.setAge(10);
+//            member2.changeTeam(team);
+//            em.persist(member2);
+//
+//            // 단일 값 연관 경로(team 객체에서 내부적으로 'name' 필드를 탐색 가능함)
+//            // 대상이 엔티티일 경우 가능
+//            String query = "select m.team.name from Member m";
+//
+//            // 컬렉션 값 연관 경로(members 컬렉션에서 내부적으로 탐색이 불가능)
+//            String collectionsQuery1 = "select t.members from Team t";
+//            // 대신 명시적 조인의 별칭을 통해 내부적으로 탐색 가능(m.username)
+//            String collectionsQuery2 = "select m.username from Team t inner join Member m";
+//
+//            tx.commit();
+//        } catch (Exception e) {
+//            tx.rollback();
+//        } finally {
+//            em.close();
+//            emf.close();
+//        }
+
         /**
-         * 12. JPQL 중급 문법 - 경로 표현식
-         * 1. 경로 표현식: .(점)을 찍어 객체 그래프를 탐색하는 것
-         *   - 상태 필드: 단순히 값을 저장하기 위한 필드(m.username)
-         *   - 연관 필드: 연관관계를 위한 필드
-         *     - 단일 값 연관 필드: target 대상이 하나인 엔티티(ex: @ManyToOne, @OneToOne, m.team)
-         *     - 컬렉션 값 연관 필드: target 대상이 컬렉션(ex: @OneToMany, @ManyToMany, m.orders)
-         * 2. 연관 필드는 기본적으로 '묵시적 내부 조인(inner join)'이 발생하게 되는데, 결론부터 말하면 '명시적 내부 조인'만 사용할 것.
-         *   - 묵시적 조인은 쿼리 분석 파악이 쉽지 않음
-         * 3. 연관 필드의 특징
-         *   - 단일 값 연관 경로: 탐색O
-         *   - 컬렉션 값 연관 경로: 컬렉션 탐색 X, 명시적 조인을 통해 별칭을 얻으면 별칭을 통해 탐색 가능.
+         * 12. JPQL 중급 문법 - 페치 조인: 연관된 엔티티나 컬렉션을 SQL 한 번에 조회하는 기능(즉시 로딩, Eager와 비슷)
+         * 1. JPQL에서 성능 최적화를 위해 제공하는 기능(SQL의 조인과는 관련 X)
+         *   - [ LEFT [OUTER] | INNER ]JOIN FETCH 명령어 사용
+         *   - <b>패치 조인을 사용하지 않을 시 지연 로딩에 의해 필요한 데이터가 있을 때마다 질의함</b>
+         * 2. 다대일 조회와 일대다 조회 결과는 다름.
+         *   - 다대일 조회는 뻥튀기 되지 않는다. Member 테이블 여러명 - Team 테이블 하나 관계
+         *   - 일대다 조회는 뻥튀기 된다. Team 테이블 하나 - Member 테이블 여러명
+         *   - 일대다는 구조적으로 하나에서 여러 개를 조회하려고 조인하기 때문에 어쩔 수 없이 데이터가 뻥튀기 됨
+         * 3. 일반 조인 vs 패치 조인
+         *   - 일반 조인은 즉시 필요한 데이터만 영속성 컨텍스트에 올리는 것이고,(필요할 때마다 추가 지연 로딩)
+         *   - 패치 조인은 관련된 엔티티를 영속성 컨텍스트에 모두 올린다.
+         *   - <b>JPQL은 결과를 반환할 때 연관관계를 고려하지 않고, 단지 SELECT 절에 지정한 엔티티를 조회한다.
+         *     패치 조인을 사용할 때만 연관된 엔티티도 함께 즉시 조회된다.</b>
          */
         try {
-            Team team = new Team();
-            team.setName("teamA");
-            em.persist(team);
+            Team teamA = new Team();
+            teamA.setName("teamA");
+            em.persist(teamA);
+
+            Team teamB = new Team();
+            teamB.setName("teamB");
+            em.persist(teamB);
 
             Member member1 = new Member();
-            member1.setUsername("관리자1");
-            member1.setAge(10);
-            member1.changeTeam(team);
+            member1.setUsername("USER1");
+            member1.changeTeam(teamA);
             em.persist(member1);
 
             Member member2 = new Member();
-            member2.setUsername("관리자2");
-            member2.setAge(10);
-            member2.changeTeam(team);
+            member2.setUsername("USER2");
+            member2.changeTeam(teamA);
             em.persist(member2);
 
-            // 단일 값 연관 경로(team 객체에서 내부적으로 'name' 필드를 탐색 가능함)
-            // 대상이 엔티티일 경우 가능
-            String query = "select m.team.name from Member m";
+            Member member3 = new Member();
+            member3.setUsername("USER3");
+            member3.changeTeam(teamB);
+            em.persist(member3);
 
-            // 컬렉션 값 연관 경로(members 컬렉션에서 내부적으로 탐색이 불가능)
-            String collectionsQuery1 = "select t.members from Team t";
-            // 대신 명시적 조인의 별칭을 통해 내부적으로 탐색 가능(m.username)
-            String collectionsQuery2 = "select m.username from Team t inner join Member m";
+            em.flush();
+            em.clear();
+
+            // 지연 로딩으로 새로운 Team을 조회할 때마다 쿼리 발생
+            // Member 1, Team 2(TeamA, TeamB) 질의 발생
+            List<Member> noFetchJoin = em.createQuery("SELECT m FROM Member m", Member.class).getResultList();
+            for (Member member : noFetchJoin) {
+                System.out.println("member: " + member.getUsername() + " | Team: " + member.getTeam().getName());
+            }
+
+            // 다대일 관계 패치 조인
+            // SELECT M.*, T.* FROM MEMBER M INNER JOIN TEAM T ON M.TEAM_ID = T.ID 와 동일
+            String fetchJoinManyToOneQuery = "SELECT m FROM Member m join fetch m.team";
+            List<Member> resultList = em.createQuery(fetchJoinManyToOneQuery, Member.class).getResultList();
+            for (Member member : resultList) {
+                System.out.println("member = " + member.getUsername() + " | " + "Team: " + member.getTeam().getName());
+            }
+
+            // 일대다 관계 패치 조인
+            // 하이버네이트 6버전 이상부터 자동으로 distinct 적용으로 중복 제거됨
+            // SELECT T.*, M.* FROM TEAM T INNER JOIN MEMBER M ON T.ID = M.TEAM_ID 와 동일
+            String fetchJoinOneToManyQuery = "SELECT t FROM Team t join fetch t.members";
+            List<Team> resultList1 = em.createQuery(fetchJoinOneToManyQuery, Team.class).getResultList();
+            for (Team team : resultList1) {
+                System.out.println("teamName: " + team.getName() + ", team: " + team);
+                for (Member member : team.getMembers()) {
+                    System.out.println("-> username: " + member.getUsername() + ", member: " + member);
+                }
+            }
+
 
             tx.commit();
         } catch (Exception e) {
@@ -442,7 +520,6 @@ public class JpaMain {
             em.close();
             emf.close();
         }
-
 
 
     }
