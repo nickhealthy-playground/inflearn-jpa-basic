@@ -5,6 +5,7 @@ import jpql.entity.Member;
 import jpql.entity.MemberType;
 import jpql.entity.Team;
 
+import java.util.Iterator;
 import java.util.List;
 
 public class JpaMain {
@@ -246,46 +247,96 @@ public class JpaMain {
 //        }
 
 
+//        /**
+//         * 11. JPQL 기본 문법 - JPQL 타입 표현
+//         * - 문자: '' 싱글 쿼터 사용
+//         * - 숫자: 10L(Long), 10D(Double), 10F(Float)
+//         * - Boolean: TRUE, FALSE
+//         * - ENUM: 풀패키지명 또는 DTO 생성 및 파라미터 바인딩 방식
+//         * - 엔티티 타입(상속 관계에서 사용): TYPE(m) = Member
+//         */
+//        try {
+//            Member member = new Member();
+//            member.setUsername("USER");
+//            member.setAge(10);
+//            member.setType(MemberType.ADMIN);
+//
+//            Team team = new Team();
+//            team.setName("teamA");
+//
+//            member.changeTeam(team);
+//
+//            em.persist(member);
+//            em.persist(team);
+//
+//            // JPQL 다양한 표현식
+//            // ENUM: 아래와 같이 파라미터 바인딩 방식이(DTO 생성) 아닌 쿼리 안에 직접 작성할 때 풀패키지명 포함
+//            String query = "SELECT m.username, 'HELLO', true FROM Member m WHERE m.type = :userType";
+//            List<Object[]> result = em.createQuery(query)
+//                    .setParameter("userType", MemberType.ADMIN)
+//                    .getResultList();
+//
+//            for (Object[] objects : result) {
+//                System.out.println("objects[0] = " + objects[0]); // USER
+//                System.out.println("objects[1] = " + objects[1]); // HELLO
+//                System.out.println("objects[2] = " + objects[2]); // TRUE
+//            }
+//
+//            // 엔티티 타입 type(상속 관계에서 사용)
+//            // DTYPE을 비교해서 필터링 한다. (ex: DTYPE = 'BOOK')
+////            String query2 = "SELECT i FROM Item i WHERE type(i) = Book";
+////            em.createQuery(query2, Item.class).getResultList();
+//
+//
+//            tx.commit();
+//        } catch (Exception e) {
+//            tx.rollback();
+//        } finally {
+//            em.close();
+//            emf.close();
+//        }
+
         /**
-         * 11. JPQL 기본 문법 - JPQL 타입 표현
-         * - 문자: '' 싱글 쿼터 사용
-         * - 숫자: 10L(Long), 10D(Double), 10F(Float)
-         * - Boolean: TRUE, FALSE
-         * - ENUM: 풀패키지명 또는 DTO 생성 및 파라미터 바인딩 방식
-         * - 엔티티 타입(상속 관계에서 사용): TYPE(m) = Member
+         * 11. JPQL 기본 문법 - 조건식
+         * - CASE
+         * - COALESCE: 하나씩 조회해서 null이 아니면 두번째 값 반환, 값이 있으면 첫 번째 값 반환
+         * - NULLIF: 두 값이 같으면 NULL 반환, 다르면 첫번째 값 반환
          */
         try {
             Member member = new Member();
-            member.setUsername("USER");
+            member.setUsername("관리자");
             member.setAge(10);
-            member.setType(MemberType.ADMIN);
-
-            Team team = new Team();
-            team.setName("teamA");
-
-            member.changeTeam(team);
 
             em.persist(member);
-            em.persist(team);
 
-            // JPQL 다양한 표현식
-            // ENUM: 아래와 같이 파라미터 바인딩 방식이(DTO 생성) 아닌 쿼리 안에 직접 작성할 때 풀패키지명 포함
-            String query = "SELECT m.username, 'HELLO', true FROM Member m WHERE m.type = :userType";
-            List<Object[]> result = em.createQuery(query)
-                    .setParameter("userType", MemberType.ADMIN)
-                    .getResultList();
+            // CASE
+            List<String> result = em.createQuery(
+                    "SELECT " +
+                            "case   when m.age <= 10 then '학생요금' " +
+                            "       when m.age <= 10 then '경로요금' " +
+                            "       else '일반요금' " +
+                            "end " +
+                            "FROM Member m ", String.class).getResultList();
 
-            for (Object[] objects : result) {
-                System.out.println("objects[0] = " + objects[0]); // USER
-                System.out.println("objects[1] = " + objects[1]); // HELLO
-                System.out.println("objects[2] = " + objects[2]); // TRUE
+            for (String s : result) {
+                System.out.println("s = " + s);
             }
 
-            // 엔티티 타입 type(상속 관계에서 사용)
-            // DTYPE을 비교해서 필터링 한다. (ex: DTYPE = 'BOOK')
-//            String query2 = "SELECT i FROM Item i WHERE type(i) = Book";
-//            em.createQuery(query2, Item.class).getResultList();
+            // COALESCE - 값이 있으면 username 출력, 없으면 '이름 없는 회원' 출력
+            String query = "SELECT COALESCE(m.username, '이름 없는 회원') FROM Member m";
+            List<String> resultList = em.createQuery(query, String.class).getResultList();
+            for (String s : resultList) {
+                System.out.println("s = " + s);
+            }
 
+            // NULLIF: 사용자 이름이 '관리자'면 null 반환, 나머지는 본인의 이름을 반환
+            String query2 = "SELECT NULLIF(m.username, '관리자') FROM Member m";
+            Iterator<String> iterator = em.createQuery(query2, String.class).getResultList().iterator();
+
+            while (iterator.hasNext()) {
+                String value = iterator.next();
+                System.out.println("value = " + value);
+            }
 
             tx.commit();
         } catch (Exception e) {
