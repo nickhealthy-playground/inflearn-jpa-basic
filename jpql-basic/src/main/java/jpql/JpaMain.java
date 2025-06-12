@@ -1,12 +1,11 @@
 package jpql;
 
-import jakarta.persistence.*;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.EntityTransaction;
+import jakarta.persistence.Persistence;
 import jpql.entity.Member;
-import jpql.entity.MemberType;
 import jpql.entity.Team;
-
-import java.util.Iterator;
-import java.util.List;
 
 public class JpaMain {
 
@@ -443,74 +442,128 @@ public class JpaMain {
 //            emf.close();
 //        }
 
+//        /**
+//         * 12. JPQL 중급 문법 - 페치 조인: 연관된 엔티티나 컬렉션을 SQL 한 번에 조회하는 기능(즉시 로딩, Eager와 비슷)
+//         * 1. JPQL에서 성능 최적화를 위해 제공하는 기능(SQL의 조인과는 관련 X)
+//         *   - [ LEFT [OUTER] | INNER ]JOIN FETCH 명령어 사용
+//         *   - <b>패치 조인을 사용하지 않을 시 지연 로딩에 의해 필요한 데이터가 있을 때마다 질의함</b>
+//         * 2. 다대일 조회와 일대다 조회 결과는 다름.
+//         *   - 다대일 조회는 뻥튀기 되지 않는다. Member 테이블 여러명 - Team 테이블 하나 관계
+//         *   - 일대다 조회는 뻥튀기 된다. Team 테이블 하나 - Member 테이블 여러명
+//         *   - 일대다는 구조적으로 하나에서 여러 개를 조회하려고 조인하기 때문에 어쩔 수 없이 데이터가 뻥튀기 됨
+//         * 3. 일반 조인 vs 패치 조인
+//         *   - 일반 조인은 즉시 필요한 데이터만 영속성 컨텍스트에 올리는 것이고,(필요할 때마다 추가 지연 로딩)
+//         *   - 패치 조인은 관련된 엔티티를 영속성 컨텍스트에 모두 올린다.
+//         *   - <b>JPQL은 결과를 반환할 때 연관관계를 고려하지 않고, 단지 SELECT 절에 지정한 엔티티를 조회한다.
+//         *     패치 조인을 사용할 때만 연관된 엔티티도 함께 즉시 조회된다.</b>
+//         */
+//        try {
+//            Team teamA = new Team();
+//            teamA.setName("teamA");
+//            em.persist(teamA);
+//
+//            Team teamB = new Team();
+//            teamB.setName("teamB");
+//            em.persist(teamB);
+//
+//            Member member1 = new Member();
+//            member1.setUsername("USER1");
+//            member1.changeTeam(teamA);
+//            em.persist(member1);
+//
+//            Member member2 = new Member();
+//            member2.setUsername("USER2");
+//            member2.changeTeam(teamA);
+//            em.persist(member2);
+//
+//            Member member3 = new Member();
+//            member3.setUsername("USER3");
+//            member3.changeTeam(teamB);
+//            em.persist(member3);
+//
+//            em.flush();
+//            em.clear();
+//
+//            // 지연 로딩으로 새로운 Team을 조회할 때마다 쿼리 발생
+//            // Member 1, Team 2(TeamA, TeamB) 질의 발생
+//            List<Member> noFetchJoin = em.createQuery("SELECT m FROM Member m", Member.class).getResultList();
+//            for (Member member : noFetchJoin) {
+//                System.out.println("member: " + member.getUsername() + " | Team: " + member.getTeam().getName());
+//            }
+//
+//            // 다대일 관계 패치 조인
+//            // SELECT M.*, T.* FROM MEMBER M INNER JOIN TEAM T ON M.TEAM_ID = T.ID 와 동일
+//            String fetchJoinManyToOneQuery = "SELECT m FROM Member m join fetch m.team";
+//            List<Member> resultList = em.createQuery(fetchJoinManyToOneQuery, Member.class).getResultList();
+//            for (Member member : resultList) {
+//                System.out.println("member = " + member.getUsername() + " | " + "Team: " + member.getTeam().getName());
+//            }
+//
+//            // 일대다 관계 패치 조인
+//            // 하이버네이트 6버전 이상부터 자동으로 distinct 적용으로 중복 제거됨
+//            // SELECT T.*, M.* FROM TEAM T INNER JOIN MEMBER M ON T.ID = M.TEAM_ID 와 동일
+//            String fetchJoinOneToManyQuery = "SELECT t FROM Team t join fetch t.members";
+//            List<Team> resultList1 = em.createQuery(fetchJoinOneToManyQuery, Team.class).getResultList();
+//            for (Team team : resultList1) {
+//                System.out.println("teamName: " + team.getName() + ", team: " + team);
+//                for (Member member : team.getMembers()) {
+//                    System.out.println("-> username: " + member.getUsername() + ", member: " + member);
+//                }
+//            }
+//
+//
+//            tx.commit();
+//        } catch (Exception e) {
+//            tx.rollback();
+//        } finally {
+//            em.close();
+//            emf.close();
+//        }
+
         /**
-         * 12. JPQL 중급 문법 - 페치 조인: 연관된 엔티티나 컬렉션을 SQL 한 번에 조회하는 기능(즉시 로딩, Eager와 비슷)
-         * 1. JPQL에서 성능 최적화를 위해 제공하는 기능(SQL의 조인과는 관련 X)
-         *   - [ LEFT [OUTER] | INNER ]JOIN FETCH 명령어 사용
-         *   - <b>패치 조인을 사용하지 않을 시 지연 로딩에 의해 필요한 데이터가 있을 때마다 질의함</b>
-         * 2. 다대일 조회와 일대다 조회 결과는 다름.
-         *   - 다대일 조회는 뻥튀기 되지 않는다. Member 테이블 여러명 - Team 테이블 하나 관계
-         *   - 일대다 조회는 뻥튀기 된다. Team 테이블 하나 - Member 테이블 여러명
-         *   - 일대다는 구조적으로 하나에서 여러 개를 조회하려고 조인하기 때문에 어쩔 수 없이 데이터가 뻥튀기 됨
-         * 3. 일반 조인 vs 패치 조인
-         *   - 일반 조인은 즉시 필요한 데이터만 영속성 컨텍스트에 올리는 것이고,(필요할 때마다 추가 지연 로딩)
-         *   - 패치 조인은 관련된 엔티티를 영속성 컨텍스트에 모두 올린다.
-         *   - <b>JPQL은 결과를 반환할 때 연관관계를 고려하지 않고, 단지 SELECT 절에 지정한 엔티티를 조회한다.
-         *     패치 조인을 사용할 때만 연관된 엔티티도 함께 즉시 조회된다.</b>
+         * 12. JPQL 중급 문법 - 엔티티 직접 사용
+         * 1. 기본 키 값
+         *   - 엔티티를 직접 사용하면 SQL에서 해당 엔티티의 기본 키 값 사용(식별자를 직접 전달하는 것과 같은 효과)
+         * 2. 외래 키 값
+         *   - 외래 키 값도 동일하게 엔티티를 넘겨 사용 가능하다.
+         *   - @JoinColumn에 적용되어 있는 FK 값을 이용한다.
          */
         try {
-            Team teamA = new Team();
-            teamA.setName("teamA");
-            em.persist(teamA);
+            Team team = new Team();
+            team.setName("teamA");
+            em.persist(team);
 
-            Team teamB = new Team();
-            teamB.setName("teamB");
-            em.persist(teamB);
-
-            Member member1 = new Member();
-            member1.setUsername("USER1");
-            member1.changeTeam(teamA);
-            em.persist(member1);
-
-            Member member2 = new Member();
-            member2.setUsername("USER2");
-            member2.changeTeam(teamA);
-            em.persist(member2);
-
-            Member member3 = new Member();
-            member3.setUsername("USER3");
-            member3.changeTeam(teamB);
-            em.persist(member3);
+            Member member = new Member();
+            member.setUsername("USER");
+            member.changeTeam(team);
+            em.persist(member);
 
             em.flush();
             em.clear();
 
-            // 지연 로딩으로 새로운 Team을 조회할 때마다 쿼리 발생
-            // Member 1, Team 2(TeamA, TeamB) 질의 발생
-            List<Member> noFetchJoin = em.createQuery("SELECT m FROM Member m", Member.class).getResultList();
-            for (Member member : noFetchJoin) {
-                System.out.println("member: " + member.getUsername() + " | Team: " + member.getTeam().getName());
-            }
+            // 엔티티로 조회 가능
+            String jpql = "SELECT m FROM Member m WHERE m = :member";
+            Member findMember = em.createQuery(jpql, Member.class)
+                    .setParameter("member", member)
+                    .getSingleResult();
 
-            // 다대일 관계 패치 조인
-            // SELECT M.*, T.* FROM MEMBER M INNER JOIN TEAM T ON M.TEAM_ID = T.ID 와 동일
-            String fetchJoinManyToOneQuery = "SELECT m FROM Member m join fetch m.team";
-            List<Member> resultList = em.createQuery(fetchJoinManyToOneQuery, Member.class).getResultList();
-            for (Member member : resultList) {
-                System.out.println("member = " + member.getUsername() + " | " + "Team: " + member.getTeam().getName());
-            }
+            System.out.println("findMember = " + findMember.getUsername());
 
-            // 일대다 관계 패치 조인
-            // 하이버네이트 6버전 이상부터 자동으로 distinct 적용으로 중복 제거됨
-            // SELECT T.*, M.* FROM TEAM T INNER JOIN MEMBER M ON T.ID = M.TEAM_ID 와 동일
-            String fetchJoinOneToManyQuery = "SELECT t FROM Team t join fetch t.members";
-            List<Team> resultList1 = em.createQuery(fetchJoinOneToManyQuery, Team.class).getResultList();
-            for (Team team : resultList1) {
-                System.out.println("teamName: " + team.getName() + ", team: " + team);
-                for (Member member : team.getMembers()) {
-                    System.out.println("-> username: " + member.getUsername() + ", member: " + member);
-                }
-            }
+            // 식별자를 직접 전달
+            String jpql2 = "SELECT m FROM Member m WHERE m.id = :member_id";
+            Member findMember2 = em.createQuery(jpql2, Member.class)
+                    .setParameter("member_id", member.getId())
+                    .getSingleResult();
+
+            System.out.println("findMember2 = " + findMember2.getUsername());
+
+            // 외래키 값
+            String foreignKeyQuery = "SELECT m FROM Member m WHERE m.team = :team";
+            Member findMember3 = em.createQuery(foreignKeyQuery, Member.class)
+                    .setParameter("team", team)
+                    .getSingleResult();
+
+            System.out.println("findMember3 = " + findMember3.getUsername());
 
 
             tx.commit();
