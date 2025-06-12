@@ -296,47 +296,97 @@ public class JpaMain {
 //            emf.close();
 //        }
 
+//        /**
+//         * 11. JPQL 기본 문법 - 조건식
+//         * - CASE
+//         * - COALESCE: 하나씩 조회해서 null이 아니면 두번째 값 반환, 값이 있으면 첫 번째 값 반환
+//         * - NULLIF: 두 값이 같으면 NULL 반환, 다르면 첫번째 값 반환
+//         */
+//        try {
+//            Member member = new Member();
+//            member.setUsername("관리자");
+//            member.setAge(10);
+//
+//            em.persist(member);
+//
+//            // CASE
+//            List<String> result = em.createQuery(
+//                    "SELECT " +
+//                            "case   when m.age <= 10 then '학생요금' " +
+//                            "       when m.age <= 10 then '경로요금' " +
+//                            "       else '일반요금' " +
+//                            "end " +
+//                            "FROM Member m ", String.class).getResultList();
+//
+//            for (String s : result) {
+//                System.out.println("s = " + s);
+//            }
+//
+//            // COALESCE - 값이 있으면 username 출력, 없으면 '이름 없는 회원' 출력
+//            String query = "SELECT COALESCE(m.username, '이름 없는 회원') FROM Member m";
+//            List<String> resultList = em.createQuery(query, String.class).getResultList();
+//            for (String s : resultList) {
+//                System.out.println("s = " + s);
+//            }
+//
+//            // NULLIF: 사용자 이름이 '관리자'면 null 반환, 나머지는 본인의 이름을 반환
+//            String query2 = "SELECT NULLIF(m.username, '관리자') FROM Member m";
+//            Iterator<String> iterator = em.createQuery(query2, String.class).getResultList().iterator();
+//
+//            while (iterator.hasNext()) {
+//                String value = iterator.next();
+//                System.out.println("value = " + value);
+//            }
+//
+//            tx.commit();
+//        } catch (Exception e) {
+//            tx.rollback();
+//        } finally {
+//            em.close();
+//            emf.close();
+//        }
+
         /**
-         * 11. JPQL 기본 문법 - 조건식
-         * - CASE
-         * - COALESCE: 하나씩 조회해서 null이 아니면 두번째 값 반환, 값이 있으면 첫 번째 값 반환
-         * - NULLIF: 두 값이 같으면 NULL 반환, 다르면 첫번째 값 반환
+         * 11. JPQL 기본 문법 - JPQL 함수
+         * 1. concat, substring, trim,  lower, upper, length, locate, abs, sqrt, mod etc..
+         * 2. JPA에서 제공하는 특별한 함수: size, index
+         *   - size: 컬렉션의 사이즈를 알게 해준다.
+         * 3. JPA 입장에서 DB 함수를 알 방법이 없기 때문에 사용자정의 함수를 등록해야 한다.
+         *   @See: jpql.custom.CustomFunctionContributor
          */
         try {
-            Member member = new Member();
-            member.setUsername("관리자");
-            member.setAge(10);
+            Member member1 = new Member();
+            member1.setUsername("관리자1");
+            member1.setAge(10);
+            em.persist(member1);
 
-            em.persist(member);
+            Member member2 = new Member();
+            member2.setUsername("관리자2");
+            member2.setAge(10);
+            em.persist(member2);
 
-            // CASE
-            List<String> result = em.createQuery(
-                    "SELECT " +
-                            "case   when m.age <= 10 then '학생요금' " +
-                            "       when m.age <= 10 then '경로요금' " +
-                            "       else '일반요금' " +
-                            "end " +
-                            "FROM Member m ", String.class).getResultList();
-
-            for (String s : result) {
+            // locate 예제: 문자의 위치를 반환
+            List<Integer> resultList = em.createQuery("select locate('de', 'abcdef') from Member m", Integer.class)
+                    .getResultList();
+            for (Integer s : resultList) {
                 System.out.println("s = " + s);
             }
 
-            // COALESCE - 값이 있으면 username 출력, 없으면 '이름 없는 회원' 출력
-            String query = "SELECT COALESCE(m.username, '이름 없는 회원') FROM Member m";
-            List<String> resultList = em.createQuery(query, String.class).getResultList();
-            for (String s : resultList) {
+            // size 예제
+            List<Integer> resultList1 = em.createQuery("select size(t.members) from Team t", Integer.class)
+                    .getResultList();
+            for (Integer i : resultList1) {
+                System.out.println("size = " + i);
+            }
+
+            // 사용자 정의 함수
+            String query = "select group_concat(m.username) from Member m";
+
+            List<String> resultList2 = em.createQuery(query, String.class).getResultList();
+            for (String s : resultList2) {
                 System.out.println("s = " + s);
             }
 
-            // NULLIF: 사용자 이름이 '관리자'면 null 반환, 나머지는 본인의 이름을 반환
-            String query2 = "SELECT NULLIF(m.username, '관리자') FROM Member m";
-            Iterator<String> iterator = em.createQuery(query2, String.class).getResultList().iterator();
-
-            while (iterator.hasNext()) {
-                String value = iterator.next();
-                System.out.println("value = " + value);
-            }
 
             tx.commit();
         } catch (Exception e) {
@@ -345,6 +395,7 @@ public class JpaMain {
             em.close();
             emf.close();
         }
+
 
     }
 }
