@@ -2,6 +2,7 @@ package jpql;
 
 import jakarta.persistence.*;
 import jpql.entity.Member;
+import jpql.entity.MemberType;
 import jpql.entity.Team;
 
 import java.util.List;
@@ -200,21 +201,64 @@ public class JpaMain {
 //            emf.close();
 //        }
 
+//        /**
+//         * 11. JPQL 기본 문법 - 서브 쿼리
+//         * 1. 서브 쿼리 지원 함수
+//         *   - [NOT] EXISTS: 서브 쿼리에 결과가 존재하면 참
+//         *   - {ALL | ANY | SOME}
+//         *     - ALL: 모두 만족하면 참
+//         *     - ANY, SOME: 같은 의미, 조건을 하나라도 만족하면 참
+//         *   - [NOT] IN: 서브 쿼리의 결과 중 하나라도 같은 것이 있으면 참
+//         *
+//         * 2. JPA 서브 쿼리는 SELECT, FROM(하이버네이트 6이상), WHERE, HAVING 모두 가능
+//         */
+//        try {
+//            Member member = new Member();
+//            member.setUsername("USER");
+//            member.setAge(10);
+//
+//            Team team = new Team();
+//            team.setName("teamA");
+//
+//            member.changeTeam(team);
+//
+//            em.persist(member);
+//            em.persist(team);
+//
+//            // 팀A 소속인 회원
+//            String query = "SELECT m FROM Member m WHERE EXISTS(SELECT t FROM Team t WHERE t.name = 'teamA')";
+//            List<Member> resultList = em.createQuery(query, Member.class).getResultList();
+//            Member findMember = resultList.get(0);
+//            System.out.println("findMember.getUsername() = " + findMember.getUsername());
+//
+//            // 어떤 팀이든 팀에 소속된 회원
+//            String query2 = "SELECT m FROM Member m WHERE m.team = ANY(SELECT t FROM Team t)";
+//            List<Member> resultList2 = em.createQuery(query2, Member.class).getResultList();
+//            System.out.println("resultList2.size() = " + resultList2.size());
+//
+//
+//            tx.commit();
+//        } catch (Exception e) {
+//            tx.rollback();
+//        } finally {
+//            em.close();
+//            emf.close();
+//        }
+
+
         /**
-         * 11. JPQL 기본 문법 - 서브 쿼리
-         * 1. 서브 쿼리 지원 함수
-         *   - [NOT] EXISTS: 서브 쿼리에 결과가 존재하면 참
-         *   - {ALL | ANY | SOME}
-         *     - ALL: 모두 만족하면 참
-         *     - ANY, SOME: 같은 의미, 조건을 하나라도 만족하면 참
-         *   - [NOT] IN: 서브 쿼리의 결과 중 하나라도 같은 것이 있으면 참
-         *
-         * 2. JPA 서브 쿼리는 SELECT, FROM(하이버네이트 6이상), WHERE, HAVING 모두 가능
+         * 11. JPQL 기본 문법 - JPQL 타입 표현
+         * - 문자: '' 싱글 쿼터 사용
+         * - 숫자: 10L(Long), 10D(Double), 10F(Float)
+         * - Boolean: TRUE, FALSE
+         * - ENUM: 풀패키지명 또는 DTO 생성 및 파라미터 바인딩 방식
+         * - 엔티티 타입(상속 관계에서 사용): TYPE(m) = Member
          */
         try {
             Member member = new Member();
             member.setUsername("USER");
             member.setAge(10);
+            member.setType(MemberType.ADMIN);
 
             Team team = new Team();
             team.setName("teamA");
@@ -224,16 +268,23 @@ public class JpaMain {
             em.persist(member);
             em.persist(team);
 
-            // 팀A 소속인 회원
-            String query = "SELECT m FROM Member m WHERE EXISTS(SELECT t FROM Team t WHERE t.name = 'teamA')";
-            List<Member> resultList = em.createQuery(query, Member.class).getResultList();
-            Member findMember = resultList.get(0);
-            System.out.println("findMember.getUsername() = " + findMember.getUsername());
+            // JPQL 다양한 표현식
+            // ENUM: 아래와 같이 파라미터 바인딩 방식이(DTO 생성) 아닌 쿼리 안에 직접 작성할 때 풀패키지명 포함
+            String query = "SELECT m.username, 'HELLO', true FROM Member m WHERE m.type = :userType";
+            List<Object[]> result = em.createQuery(query)
+                    .setParameter("userType", MemberType.ADMIN)
+                    .getResultList();
 
-            // 어떤 팀이든 팀에 소속된 회원
-            String query2 = "SELECT m FROM Member m WHERE m.team = ANY(SELECT t FROM Team t)";
-            List<Member> resultList2 = em.createQuery(query2, Member.class).getResultList();
-            System.out.println("resultList2.size() = " + resultList2.size());
+            for (Object[] objects : result) {
+                System.out.println("objects[0] = " + objects[0]); // USER
+                System.out.println("objects[1] = " + objects[1]); // HELLO
+                System.out.println("objects[2] = " + objects[2]); // TRUE
+            }
+
+            // 엔티티 타입 type(상속 관계에서 사용)
+            // DTYPE을 비교해서 필터링 한다. (ex: DTYPE = 'BOOK')
+//            String query2 = "SELECT i FROM Item i WHERE type(i) = Book";
+//            em.createQuery(query2, Item.class).getResultList();
 
 
             tx.commit();

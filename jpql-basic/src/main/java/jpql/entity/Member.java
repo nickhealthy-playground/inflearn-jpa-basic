@@ -29,6 +29,9 @@ public class Member {
     @OneToMany(mappedBy = "member")
     private List<Order> orders = new ArrayList<>();
 
+    @Enumerated(EnumType.STRING)
+    private MemberType type;
+
     public void changeTeam(Team team) {
         this.setTeam(team);
         team.getMembers().add(this);
@@ -72,5 +75,13 @@ public class Member {
 
     public void setOrders(List<Order> orders) {
         this.orders = orders;
+    }
+
+    public MemberType getType() {
+        return type;
+    }
+
+    public void setType(MemberType type) {
+        this.type = type;
     }
 }
