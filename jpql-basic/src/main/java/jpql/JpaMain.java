@@ -346,47 +346,94 @@ public class JpaMain {
 //            emf.close();
 //        }
 
+//        /**
+//         * 11. JPQL 기본 문법 - JPQL 함수
+//         * 1. concat, substring, trim,  lower, upper, length, locate, abs, sqrt, mod etc..
+//         * 2. JPA에서 제공하는 특별한 함수: size, index
+//         *   - size: 컬렉션의 사이즈를 알게 해준다.
+//         * 3. JPA 입장에서 DB 함수를 알 방법이 없기 때문에 사용자정의 함수를 등록해야 한다.
+//         *   @See: jpql.custom.CustomFunctionContributor
+//         */
+//        try {
+//            Member member1 = new Member();
+//            member1.setUsername("관리자1");
+//            member1.setAge(10);
+//            em.persist(member1);
+//
+//            Member member2 = new Member();
+//            member2.setUsername("관리자2");
+//            member2.setAge(10);
+//            em.persist(member2);
+//
+//            // locate 예제: 문자의 위치를 반환
+//            List<Integer> resultList = em.createQuery("select locate('de', 'abcdef') from Member m", Integer.class)
+//                    .getResultList();
+//            for (Integer s : resultList) {
+//                System.out.println("s = " + s);
+//            }
+//
+//            // size 예제
+//            List<Integer> resultList1 = em.createQuery("select size(t.members) from Team t", Integer.class)
+//                    .getResultList();
+//            for (Integer i : resultList1) {
+//                System.out.println("size = " + i);
+//            }
+//
+//            // 사용자 정의 함수
+//            String query = "select group_concat(m.username) from Member m";
+//
+//            List<String> resultList2 = em.createQuery(query, String.class).getResultList();
+//            for (String s : resultList2) {
+//                System.out.println("s = " + s);
+//            }
+//
+//
+//            tx.commit();
+//        } catch (Exception e) {
+//            tx.rollback();
+//        } finally {
+//            em.close();
+//            emf.close();
+//        }
+
         /**
-         * 11. JPQL 기본 문법 - JPQL 함수
-         * 1. concat, substring, trim,  lower, upper, length, locate, abs, sqrt, mod etc..
-         * 2. JPA에서 제공하는 특별한 함수: size, index
-         *   - size: 컬렉션의 사이즈를 알게 해준다.
-         * 3. JPA 입장에서 DB 함수를 알 방법이 없기 때문에 사용자정의 함수를 등록해야 한다.
-         *   @See: jpql.custom.CustomFunctionContributor
+         * 12. JPQL 중급 문법 - 경로 표현식
+         * 1. 경로 표현식: .(점)을 찍어 객체 그래프를 탐색하는 것
+         *   - 상태 필드: 단순히 값을 저장하기 위한 필드(m.username)
+         *   - 연관 필드: 연관관계를 위한 필드
+         *     - 단일 값 연관 필드: target 대상이 하나인 엔티티(ex: @ManyToOne, @OneToOne, m.team)
+         *     - 컬렉션 값 연관 필드: target 대상이 컬렉션(ex: @OneToMany, @ManyToMany, m.orders)
+         * 2. 연관 필드는 기본적으로 '묵시적 내부 조인(inner join)'이 발생하게 되는데, 결론부터 말하면 '명시적 내부 조인'만 사용할 것.
+         *   - 묵시적 조인은 쿼리 분석 파악이 쉽지 않음
+         * 3. 연관 필드의 특징
+         *   - 단일 값 연관 경로: 탐색O
+         *   - 컬렉션 값 연관 경로: 컬렉션 탐색 X, 명시적 조인을 통해 별칭을 얻으면 별칭을 통해 탐색 가능.
          */
         try {
+            Team team = new Team();
+            team.setName("teamA");
+            em.persist(team);
+
             Member member1 = new Member();
             member1.setUsername("관리자1");
             member1.setAge(10);
+            member1.changeTeam(team);
             em.persist(member1);
 
             Member member2 = new Member();
             member2.setUsername("관리자2");
             member2.setAge(10);
+            member2.changeTeam(team);
             em.persist(member2);
 
-            // locate 예제: 문자의 위치를 반환
-            List<Integer> resultList = em.createQuery("select locate('de', 'abcdef') from Member m", Integer.class)
-                    .getResultList();
-            for (Integer s : resultList) {
-                System.out.println("s = " + s);
-            }
+            // 단일 값 연관 경로(team 객체에서 내부적으로 'name' 필드를 탐색 가능함)
+            // 대상이 엔티티일 경우 가능
+            String query = "select m.team.name from Member m";
 
-            // size 예제
-            List<Integer> resultList1 = em.createQuery("select size(t.members) from Team t", Integer.class)
-                    .getResultList();
-            for (Integer i : resultList1) {
-                System.out.println("size = " + i);
-            }
-
-            // 사용자 정의 함수
-            String query = "select group_concat(m.username) from Member m";
-
-            List<String> resultList2 = em.createQuery(query, String.class).getResultList();
-            for (String s : resultList2) {
-                System.out.println("s = " + s);
-            }
-
+            // 컬렉션 값 연관 경로(members 컬렉션에서 내부적으로 탐색이 불가능)
+            String collectionsQuery1 = "select t.members from Team t";
+            // 대신 명시적 조인의 별칭을 통해 내부적으로 탐색 가능(m.username)
+            String collectionsQuery2 = "select m.username from Team t inner join Member m";
 
             tx.commit();
         } catch (Exception e) {
@@ -395,6 +442,7 @@ public class JpaMain {
             em.close();
             emf.close();
         }
+
 
 
     }
