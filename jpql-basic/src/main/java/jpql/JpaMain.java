@@ -5,7 +5,10 @@ import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.EntityTransaction;
 import jakarta.persistence.Persistence;
 import jpql.entity.Member;
+import jpql.entity.MemberType;
 import jpql.entity.Team;
+
+import java.util.List;
 
 public class JpaMain {
 
@@ -520,60 +523,92 @@ public class JpaMain {
 //            emf.close();
 //        }
 
+//        /**
+//         * 12. JPQL 중급 문법 - 엔티티 직접 사용
+//         * 1. 기본 키 값
+//         *   - 엔티티를 직접 사용하면 SQL에서 해당 엔티티의 기본 키 값 사용(식별자를 직접 전달하는 것과 같은 효과)
+//         * 2. 외래 키 값
+//         *   - 외래 키 값도 동일하게 엔티티를 넘겨 사용 가능하다.
+//         *   - @JoinColumn에 적용되어 있는 FK 값을 이용한다.
+//         */
+//        try {
+//            Team team = new Team();
+//            team.setName("teamA");
+//            em.persist(team);
+//
+//            Member member = new Member();
+//            member.setUsername("USER");
+//            member.changeTeam(team);
+//            em.persist(member);
+//
+//            em.flush();
+//            em.clear();
+//
+//            // 엔티티로 조회 가능
+//            String jpql = "SELECT m FROM Member m WHERE m = :member";
+//            Member findMember = em.createQuery(jpql, Member.class)
+//                    .setParameter("member", member)
+//                    .getSingleResult();
+//
+//            System.out.println("findMember = " + findMember.getUsername());
+//
+//            // 식별자를 직접 전달
+//            String jpql2 = "SELECT m FROM Member m WHERE m.id = :member_id";
+//            Member findMember2 = em.createQuery(jpql2, Member.class)
+//                    .setParameter("member_id", member.getId())
+//                    .getSingleResult();
+//
+//            System.out.println("findMember2 = " + findMember2.getUsername());
+//
+//            // 외래키 값
+//            String foreignKeyQuery = "SELECT m FROM Member m WHERE m.team = :team";
+//            Member findMember3 = em.createQuery(foreignKeyQuery, Member.class)
+//                    .setParameter("team", team)
+//                    .getSingleResult();
+//
+//            System.out.println("findMember3 = " + findMember3.getUsername());
+//
+//
+//            tx.commit();
+//        } catch (Exception e) {
+//            tx.rollback();
+//        } finally {
+//            em.close();
+//            emf.close();
+//        }
+
         /**
-         * 12. JPQL 중급 문법 - 엔티티 직접 사용
-         * 1. 기본 키 값
-         *   - 엔티티를 직접 사용하면 SQL에서 해당 엔티티의 기본 키 값 사용(식별자를 직접 전달하는 것과 같은 효과)
-         * 2. 외래 키 값
-         *   - 외래 키 값도 동일하게 엔티티를 넘겨 사용 가능하다.
-         *   - @JoinColumn에 적용되어 있는 FK 값을 이용한다.
+         * 12. JPQL 중급 문법 - Named 쿼리(정적 쿼리)
+         * 1. Named 쿼리
+         *   - 미리 정의해서 이름을 부여해두고 사용하는 JPQL
+         *   - 어노테이션, XML에 정의
+         *   - 애플리케이션 로딩 시점에 초기화 후 재사용
+         *   - <b>애플리케이션 로딩 시점에 쿼리를 검증</b>
          */
         try {
-            Team team = new Team();
-            team.setName("teamA");
-            em.persist(team);
-
             Member member = new Member();
+            member.setAge(10);
             member.setUsername("USER");
-            member.changeTeam(team);
             em.persist(member);
 
             em.flush();
             em.clear();
 
-            // 엔티티로 조회 가능
-            String jpql = "SELECT m FROM Member m WHERE m = :member";
-            Member findMember = em.createQuery(jpql, Member.class)
-                    .setParameter("member", member)
+            // createNamedQuery 메서드명 주의
+            Member singleResult = em.createNamedQuery("Member.findByUsername", Member.class)
+                    .setParameter("username", "USER")
                     .getSingleResult();
 
-            System.out.println("findMember = " + findMember.getUsername());
-
-            // 식별자를 직접 전달
-            String jpql2 = "SELECT m FROM Member m WHERE m.id = :member_id";
-            Member findMember2 = em.createQuery(jpql2, Member.class)
-                    .setParameter("member_id", member.getId())
-                    .getSingleResult();
-
-            System.out.println("findMember2 = " + findMember2.getUsername());
-
-            // 외래키 값
-            String foreignKeyQuery = "SELECT m FROM Member m WHERE m.team = :team";
-            Member findMember3 = em.createQuery(foreignKeyQuery, Member.class)
-                    .setParameter("team", team)
-                    .getSingleResult();
-
-            System.out.println("findMember3 = " + findMember3.getUsername());
-
+            System.out.println("singleResult = " + singleResult);
 
             tx.commit();
         } catch (Exception e) {
             tx.rollback();
+            e.printStackTrace();
         } finally {
             em.close();
             emf.close();
         }
-
 
     }
 }
