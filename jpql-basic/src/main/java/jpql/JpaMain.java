@@ -577,29 +577,82 @@ public class JpaMain {
 //            emf.close();
 //        }
 
+//        /**
+//         * 12. JPQL 중급 문법 - Named 쿼리(정적 쿼리)
+//         * 1. Named 쿼리
+//         *   - 미리 정의해서 이름을 부여해두고 사용하는 JPQL
+//         *   - 어노테이션, XML에 정의
+//         *   - 애플리케이션 로딩 시점에 초기화 후 재사용
+//         *   - <b>애플리케이션 로딩 시점에 쿼리를 검증</b>
+//         */
+//        try {
+//            Member member = new Member();
+//            member.setAge(10);
+//            member.setUsername("USER");
+//            em.persist(member);
+//
+//            em.flush();
+//            em.clear();
+//
+//            // createNamedQuery 메서드명 주의
+//            Member singleResult = em.createNamedQuery("Member.findByUsername", Member.class)
+//                    .setParameter("username", "USER")
+//                    .getSingleResult();
+//
+//            System.out.println("singleResult = " + singleResult);
+//
+//            tx.commit();
+//        } catch (Exception e) {
+//            tx.rollback();
+//            e.printStackTrace();
+//        } finally {
+//            em.close();
+//            emf.close();
+//        }
+
         /**
-         * 12. JPQL 중급 문법 - Named 쿼리(정적 쿼리)
-         * 1. Named 쿼리
-         *   - 미리 정의해서 이름을 부여해두고 사용하는 JPQL
-         *   - 어노테이션, XML에 정의
-         *   - 애플리케이션 로딩 시점에 초기화 후 재사용
-         *   - <b>애플리케이션 로딩 시점에 쿼리를 검증</b>
+         * 12. JPQL 중급 문법 - 벌크연산
+         * 1. 벌크 연산: 쿼리 한 번으로 여러 테이블 로우 변경(엔티티)
+         *   - JPA 변경 감지(dirty check) 기능으로 많은 데이터를 변경하려면 건당 쿼리가 발생해 너무 많은 쿼리 발생
+         *   - `executeUpdate()` 메서드를 사용하면 벌크연산 실행 가능
+         *   - 참고로 JPA 표준은 아니지만 하이버네이트를 사용하면 INSERT - SELECT 쿼리도 가능
+         * 2. 벌크 연산 주의
+         *   - 벌크 연산은 영속성 컨텍스트를 무시하고 DB에 직접 쿼리하므로 데이터 정합성이 깨질 수 있음
+         *   - 해결법 2가지
+         *     - 벌크 연산을 먼저 실행
+         *     - 벌크 연산 수행 후 영속성 컨텍스트 초기화
          */
         try {
-            Member member = new Member();
-            member.setAge(10);
-            member.setUsername("USER");
-            em.persist(member);
+            Member member1 = new Member();
+            member1.setAge(10);
+            member1.setUsername("USER1");
+            em.persist(member1);
 
-            em.flush();
-            em.clear();
+            Member member2 = new Member();
+            member2.setAge(10);
+            member2.setUsername("USER2");
+            em.persist(member2);
 
-            // createNamedQuery 메서드명 주의
-            Member singleResult = em.createNamedQuery("Member.findByUsername", Member.class)
-                    .setParameter("username", "USER")
-                    .getSingleResult();
+            Member member3 = new Member();
+            member3.setAge(10);
+            member3.setUsername("USER3");
+            em.persist(member3);
 
-            System.out.println("singleResult = " + singleResult);
+            int resultCount = em.createQuery("UPDATE Member m SET m.age = 30")
+                    .executeUpdate();
+
+            System.out.println("resultCount = " + resultCount); // 3
+
+            em.clear(); // 영속성 컨텍스트를 초기화하지 않고 조회할 시 위에 세팅한 age = 10으로 나옴
+            // 즉, 벌크 연산을 먼저 수행하는 것을 추천
+
+            Member findMember1 = em.find(Member.class, member1.getId());
+            Member findMember2 = em.find(Member.class, member2.getId());
+            Member findMember3 = em.find(Member.class, member3.getId());
+
+            System.out.println("findMember1 = " + findMember1.getAge()); // 10
+            System.out.println("findMember2 = " + findMember2.getAge()); // 10
+            System.out.println("findMember3 = " + findMember3.getAge()); // 10
 
             tx.commit();
         } catch (Exception e) {
